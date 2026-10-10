@@ -1,24 +1,17 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import toast from "react-hot-toast";
-import { Cpu, Server, Swords, ShieldCheck, Activity, Shield } from "lucide-react";
 import { api } from "../api";
 import ScenarioPicker from "../components/ScenarioPicker";
 import EventTimeline from "../components/EventTimeline";
 import InvestigationFeed from "../components/InvestigationFeed";
 import ApprovalQueue from "../components/ApprovalQueue";
 import Scoreboard from "../components/Scoreboard";
-import { SpotlightNew, AnimatedTooltip, InfiniteMovingCards } from "../ui/aceternity";
+import { SpotlightNew, AnimatedTooltip } from "../ui/aceternity";
+import { avatar } from "../lib/avatars";
 
-const TECHS = [
-  { id: "T1566.002", name: "Prompt Injection", icon: <Swords className="h-3.5 w-3.5 text-red" /> },
-  { id: "T1059", name: "Tool Abuse", icon: <Activity className="h-3.5 w-3.5 text-amber" /> },
-  { id: "T1552.005", name: "Cloud Creds", icon: <Cpu className="h-3.5 w-3.5 text-azure" /> },
-  { id: "T1530", name: "Cloud Exfil", icon: <Server className="h-3.5 w-3.5 text-red" /> },
-  { id: "T1621", name: "MFA Fatigue", icon: <Shield className="h-3.5 w-3.5 text-amber" /> },
-  { id: "T1078", name: "Valid Accounts", icon: <ShieldCheck className="h-3.5 w-3.5 text-lime" /> },
-  { id: "T1550.001", name: "Alt Auth Material", icon: <Activity className="h-3.5 w-3.5 text-azure" /> },
-];
+const SPOT_RED = "radial-gradient(68.54% 68.72% at 55.02% 31.46%, hsla(349, 97%, 62%, 0.08) 0, hsla(349, 90%, 50%, 0.03) 50%, transparent 80%)";
+const SPOT_BLUE = "radial-gradient(50% 50% at 50% 50%, hsla(210, 100%, 62%, 0.07) 0, hsla(210, 90%, 50%, 0.02) 80%, transparent 100%)";
 
 export default function Dashboard() {
   const [meta, setMeta] = useState(null);
@@ -105,25 +98,29 @@ export default function Dashboard() {
 
   const providers = meta
     ? [
-        { id: 1, name: meta.blue.provider, designation: `Blue · ${meta.blue.model}`, initials: "B" },
-        { id: 2, name: meta.red.provider, designation: `Red · ${meta.red.model}`, initials: "R" },
+        { id: 2, name: meta.red.provider, designation: `Red · ${meta.red.model}`, image: avatar("R", "#fc2947", "#ff8a5b") },
+        { id: 1, name: meta.blue.provider, designation: `Blue · ${meta.blue.model}`, image: avatar("B", "#3da5ff", "#2ee6a0") },
       ]
     : [];
 
   return (
     <div className="relative flex h-full flex-col overflow-hidden">
-      <SpotlightNew translateY={-260} height={900} />
+      <SpotlightNew gradientFirst={SPOT_RED} gradientSecond={SPOT_BLUE} translateY={-260} height={900} />
 
       <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} className="relative z-10 flex items-center gap-4 border-b border-white/5 px-6 py-4">
         <div>
           <h1 className="text-lg font-bold tracking-tight">War Room</h1>
-          <p className="text-xs text-slate-500">Autonomous red vs blue engagement</p>
+          <p className="text-xs text-neutral-500">Autonomous red vs blue engagement</p>
         </div>
-        <div className="mx-auto hidden min-w-0 max-w-sm flex-1 md:block">
-          <InfiniteMovingCards items={TECHS} speed="slow" />
-        </div>
-        <div className="flex items-center gap-3">
-          {providers.length > 0 && <AnimatedTooltip items={providers} />}
+        <div className="ml-auto flex items-center gap-5">
+          {providers.length > 0 && (
+            <div className="hidden items-center gap-3 sm:flex">
+              <div className="flex items-center pl-2">
+                <AnimatedTooltip items={providers} />
+              </div>
+              <span className="text-xs text-neutral-500">red · blue engines</span>
+            </div>
+          )}
           <ModePill live={live} />
         </div>
       </motion.div>

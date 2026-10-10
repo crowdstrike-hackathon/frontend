@@ -1,5 +1,6 @@
 /** @type {import('tailwindcss').Config} */
 module.exports = {
+  darkMode: "class",
   content: ["./src/**/*.{js,jsx,ts,tsx}", "./public/index.html"],
   theme: {
     extend: {
@@ -31,6 +32,7 @@ module.exports = {
         pulseGlow: "pulseGlow 3s ease-in-out infinite",
         float: "float 6s ease-in-out infinite",
         meteor: "meteor 5s linear infinite",
+        "meteor-effect": "meteor 5s linear infinite",
         spotlight: "spotlight 2s ease .75s 1 forwards",
         scroll: "scroll var(--animation-duration, 40s) var(--animation-direction, forwards) linear infinite",
         "move-bg": "moveBg 20s ease infinite",

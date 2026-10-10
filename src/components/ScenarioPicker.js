@@ -31,7 +31,7 @@ export default function ScenarioPicker({ meta, scenarios, selected, onSelect, st
 
         <div className="mt-4">
           {!started ? (
-            <MovingBorderButton onClick={onLaunch} disabled={!selected || busy} containerClassName="w-full" className="w-full">
+            <MovingBorderButton onClick={onLaunch} disabled={!selected || busy} borderRadius="0.75rem" containerClassName="h-12 w-full" className="w-full gap-2 border-white/10 bg-ink-900/90 font-semibold disabled:opacity-40" borderClassName="bg-[radial-gradient(#fc2947_40%,transparent_60%)]">
               {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <><Play className="h-4 w-4" /> Launch simulation</>}
             </MovingBorderButton>
           ) : (
