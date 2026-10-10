@@ -12,10 +12,7 @@ module.exports = {
           700: "#1b2130",
           600: "#2a3342",
         },
-        red: {
-          DEFAULT: "#fc2947",
-          glow: "#ff4d6a",
-        },
+        red: { DEFAULT: "#fc2947", glow: "#ff4d6a" },
         azure: "#3da5ff",
         lime: "#2ee6a0",
         amber: "#f5a623",
@@ -27,6 +24,18 @@ module.exports = {
       boxShadow: {
         glow: "0 0 40px -10px rgba(252,41,71,0.45)",
         "glow-blue": "0 0 40px -10px rgba(61,165,255,0.45)",
+      },
+      animation: {
+        shimmer: "shimmer 2.5s linear infinite",
+        aurora: "aurora 60s linear infinite",
+        pulseGlow: "pulseGlow 3s ease-in-out infinite",
+        float: "float 6s ease-in-out infinite",
+        meteor: "meteor 5s linear infinite",
+        spotlight: "spotlight 2s ease .75s 1 forwards",
+        scroll: "scroll var(--animation-duration, 40s) var(--animation-direction, forwards) linear infinite",
+        "move-bg": "moveBg 20s ease infinite",
+        "border-spin": "borderSpin 4s linear infinite",
+        "text-gradient": "textGradient 4s linear infinite",
       },
       keyframes: {
         shimmer: {
@@ -43,14 +52,30 @@ module.exports = {
         },
         float: {
           "0%, 100%": { transform: "translateY(0)" },
-          "50%": { transform: "translateY(-6px)" },
+          "50%": { transform: "translateY(-10px)" },
         },
-      },
-      animation: {
-        shimmer: "shimmer 2.5s linear infinite",
-        aurora: "aurora 60s linear infinite",
-        pulseGlow: "pulseGlow 3s ease-in-out infinite",
-        float: "float 5s ease-in-out infinite",
+        meteor: {
+          "0%": { transform: "rotate(215deg) translateX(0)", opacity: "1" },
+          "70%": { opacity: "1" },
+          "100%": { transform: "rotate(215deg) translateX(-500px)", opacity: "0" },
+        },
+        spotlight: {
+          "0%": { opacity: "0", transform: "translate(-72%, -62%) scale(0.5)" },
+          "100%": { opacity: "1", transform: "translate(-50%,-40%) scale(1)" },
+        },
+        scroll: {
+          to: { transform: "translate(calc(-50% - 0.5rem))" },
+        },
+        moveBg: {
+          "0%, 100%": { backgroundPosition: "0% 50%" },
+          "50%": { backgroundPosition: "100% 50%" },
+        },
+        borderSpin: {
+          "100%": { transform: "rotate(360deg)" },
+        },
+        textGradient: {
+          to: { backgroundPosition: "200% center" },
+        },
       },
     },
   },

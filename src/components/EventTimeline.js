@@ -1,7 +1,7 @@
 import React, { useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Key, Fingerprint, Monitor, Wifi, Cloud, Mail, ShieldAlert, Radio } from "lucide-react";
-import GlassCard from "../ui/GlassCard";
+import Panel from "./Panel";
 import { SEVERITY_COLOR } from "../lib/utils";
 
 const ICONS = { auth: Key, identity: Fingerprint, endpoint: Monitor, network: Wifi, cloud: Cloud, email: Mail };
@@ -13,20 +13,22 @@ export default function EventTimeline({ events, narrative, trusted, suspected, r
   }, [events.length]);
 
   return (
-    <GlassCard className="flex min-h-0 flex-1 flex-col" spotlight={false}>
-      <div className="flex items-center justify-between border-b border-white/5 px-5 py-3.5">
-        <div className="flex items-center gap-2">
-          <Radio className="h-4 w-4 text-red" />
-          <h3 className="text-sm font-semibold">Live telemetry</h3>
-          <span className="text-xs text-slate-500">· adversary AI is emitting logs</span>
-        </div>
-        {running && (
-          <span className="flex items-center gap-1.5 text-xs text-red">
-            <span className="h-2 w-2 animate-ping rounded-full bg-red" /> streaming
-          </span>
-        )}
-      </div>
-
+    <Panel
+      className="flex-1"
+      dots={false}
+      icon={<Radio className="h-4 w-4 text-red" />}
+      title="Live telemetry"
+      right={
+        <>
+          <span className="text-xs text-slate-500">adversary AI emitting logs</span>
+          {running && (
+            <span className="flex items-center gap-1.5 text-xs text-red">
+              <span className="h-2 w-2 animate-ping rounded-full bg-red" /> streaming
+            </span>
+          )}
+        </>
+      }
+    >
       <div className="scrollbar-thin flex-1 overflow-y-auto px-5 py-3">
         <AnimatePresence initial={false}>
           {narrative && (
@@ -36,7 +38,7 @@ export default function EventTimeline({ events, narrative, trusted, suspected, r
               animate={{ opacity: 1, y: 0 }}
               className="mb-3 flex items-center gap-2 rounded-lg border border-red/20 bg-red/5 px-3 py-2 font-mono text-xs text-red/90"
             >
-              <Swords /> {narrative}
+              <span className="font-bold">RED ▸</span> {narrative}
             </motion.div>
           )}
         </AnimatePresence>
@@ -93,12 +95,6 @@ export default function EventTimeline({ events, narrative, trusted, suspected, r
           <div ref={endRef} />
         </div>
       </div>
-    </GlassCard>
-  );
-}
-
-function Swords() {
-  return (
-    <span className="font-bold">RED ▸</span>
+    </Panel>
   );
 }

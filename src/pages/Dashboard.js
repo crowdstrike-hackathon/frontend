@@ -1,14 +1,24 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import toast from "react-hot-toast";
-import { Cpu, Server } from "lucide-react";
+import { Cpu, Server, Swords, ShieldCheck, Activity, Shield } from "lucide-react";
 import { api } from "../api";
-import DuelBeam from "../ui/DuelBeam";
 import ScenarioPicker from "../components/ScenarioPicker";
 import EventTimeline from "../components/EventTimeline";
 import InvestigationFeed from "../components/InvestigationFeed";
 import ApprovalQueue from "../components/ApprovalQueue";
 import Scoreboard from "../components/Scoreboard";
+import { SpotlightNew, AnimatedTooltip, InfiniteMovingCards } from "../ui/aceternity";
+
+const TECHS = [
+  { id: "T1566.002", name: "Prompt Injection", icon: <Swords className="h-3.5 w-3.5 text-red" /> },
+  { id: "T1059", name: "Tool Abuse", icon: <Activity className="h-3.5 w-3.5 text-amber" /> },
+  { id: "T1552.005", name: "Cloud Creds", icon: <Cpu className="h-3.5 w-3.5 text-azure" /> },
+  { id: "T1530", name: "Cloud Exfil", icon: <Server className="h-3.5 w-3.5 text-red" /> },
+  { id: "T1621", name: "MFA Fatigue", icon: <Shield className="h-3.5 w-3.5 text-amber" /> },
+  { id: "T1078", name: "Valid Accounts", icon: <ShieldCheck className="h-3.5 w-3.5 text-lime" /> },
+  { id: "T1550.001", name: "Alt Auth Material", icon: <Activity className="h-3.5 w-3.5 text-azure" /> },
+];
 
 export default function Dashboard() {
   const [meta, setMeta] = useState(null);
@@ -86,36 +96,39 @@ export default function Dashboard() {
     setRunning(true);
     try { await api.run(session.id); } catch (e) { toast.error(e.message); setRunning(false); }
   };
-  const decide = (actionId, decision) =>
-    api.decide(session.id, actionId, decision).catch((e) => toast.error(e.message));
+  const decide = (actionId, decision) => api.decide(session.id, actionId, decision).catch((e) => toast.error(e.message));
 
   const last = investigations[investigations.length - 1];
   const trusted = new Set(last ? last.trusted_event_ids : []);
   const suspected = new Set(last ? last.suspected_decoy_ids : []);
   const live = meta?.mode === "live";
 
+  const providers = meta
+    ? [
+        { id: 1, name: meta.blue.provider, designation: `Blue · ${meta.blue.model}`, initials: "B" },
+        { id: 2, name: meta.red.provider, designation: `Red · ${meta.red.model}`, initials: "R" },
+      ]
+    : [];
+
   return (
-    <div className="flex h-full flex-col">
-      <motion.div
-        initial={{ opacity: 0, y: -8 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="flex items-center gap-4 border-b border-white/5 px-6 py-4"
-      >
+    <div className="relative flex h-full flex-col overflow-hidden">
+      <SpotlightNew translateY={-260} height={900} />
+
+      <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} className="relative z-10 flex items-center gap-4 border-b border-white/5 px-6 py-4">
         <div>
           <h1 className="text-lg font-bold tracking-tight">War Room</h1>
           <p className="text-xs text-slate-500">Autonomous red vs blue engagement</p>
         </div>
-        <div className="mx-auto hidden w-[340px] md:block">
-          <DuelBeam active={running || events.length > 0} />
+        <div className="mx-auto hidden min-w-0 max-w-sm flex-1 md:block">
+          <InfiniteMovingCards items={TECHS} speed="slow" />
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-3">
+          {providers.length > 0 && <AnimatedTooltip items={providers} />}
           <ModePill live={live} />
-          <ProviderPill icon={Cpu} label="Blue" value={meta?.blue.provider} />
-          <ProviderPill icon={Server} label="Red" value={meta?.red.provider} />
         </div>
       </motion.div>
 
-      <div className="grid min-h-0 flex-1 grid-cols-1 gap-4 overflow-hidden p-6 lg:grid-cols-[300px_1fr_360px]">
+      <div className="relative z-10 grid min-h-0 flex-1 grid-cols-1 gap-4 overflow-hidden p-6 lg:grid-cols-[300px_1fr_360px]">
         <div className="min-h-0 overflow-y-auto scrollbar-thin">
           <ScenarioPicker
             meta={meta}
@@ -124,6 +137,7 @@ export default function Dashboard() {
             onSelect={setSelected}
             started={!!session}
             busy={busy}
+            running={running}
             onLaunch={launch}
             onStep={step}
             onRun={run}
@@ -150,14 +164,6 @@ function ModePill({ live }) {
   return (
     <span className={`rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider ring-1 ${live ? "bg-lime/10 text-lime ring-lime/30" : "bg-amber/10 text-amber ring-amber/30"}`}>
       {live ? "Live" : "Mock"}
-    </span>
-  );
-}
-
-function ProviderPill({ icon: Icon, label, value }) {
-  return (
-    <span className="flex items-center gap-1.5 rounded-full border-hair bg-white/5 px-2.5 py-1 text-[11px] text-slate-400">
-      <Icon className="h-3 w-3" /> {label}: <b className="font-semibold text-slate-200">{value || "—"}</b>
     </span>
   );
 }

@@ -1,7 +1,7 @@
 import React from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ShieldCheck, Check, X, Zap, Crosshair } from "lucide-react";
-import GlassCard from "../ui/GlassCard";
+import Panel from "./Panel";
 
 const STATUS = {
   proposed: "text-amber bg-amber/10 ring-amber/30",
@@ -16,43 +16,30 @@ export default function ApprovalQueue({ actions, onDecide }) {
   const pending = dedup.filter((a) => a.status === "proposed").length;
 
   return (
-    <GlassCard className="flex min-h-0 flex-col" spotlight={false}>
-      <div className="flex items-center gap-2 border-b border-white/5 px-4 py-3">
-        <ShieldCheck className="h-4 w-4 text-lime" />
-        <h3 className="text-sm font-semibold">Governed response</h3>
-        <span className="text-xs text-slate-500">· human-in-the-loop</span>
-        {pending > 0 && (
-          <span className="ml-auto rounded-full bg-amber/15 px-2 py-0.5 text-[10px] font-bold text-amber">
-            {pending} pending
-          </span>
-        )}
-      </div>
+    <Panel
+      icon={<ShieldCheck className="h-4 w-4 text-lime" />}
+      title="Governed response"
+      right={
+        <>
+          <span className="text-xs text-slate-500">human-in-the-loop</span>
+          {pending > 0 && <span className="rounded-full bg-amber/15 px-2 py-0.5 text-[10px] font-bold text-amber">{pending} pending</span>}
+        </>
+      }
+    >
       <div className="scrollbar-thin max-h-[320px] flex-1 overflow-y-auto px-4 py-3">
-        {dedup.length === 0 && (
-          <div className="py-8 text-center text-xs text-slate-500">No response actions proposed yet.</div>
-        )}
+        {dedup.length === 0 && <div className="py-8 text-center text-xs text-slate-500">No response actions proposed yet.</div>}
         <AnimatePresence initial={false}>
           {dedup.map((a) => (
-            <motion.div
-              key={a.id}
-              layout
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="mb-2.5 rounded-xl border border-white/5 bg-white/[0.02] p-3"
-            >
+            <motion.div key={a.id} layout initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="mb-2.5 rounded-xl border border-white/5 bg-white/[0.02] p-3">
               <div className="flex items-start gap-2">
                 <Crosshair className="mt-0.5 h-4 w-4 shrink-0 text-red/80" />
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-2">
                     <span className="text-[13px] font-semibold text-slate-100">{a.title}</span>
-                    <span className={`ml-auto rounded px-1.5 py-0.5 text-[9px] font-bold uppercase ring-1 ${STATUS[a.status]}`}>
-                      {a.status}
-                    </span>
+                    <span className={`ml-auto rounded px-1.5 py-0.5 text-[9px] font-bold uppercase ring-1 ${STATUS[a.status]}`}>{a.status}</span>
                   </div>
                   <p className="mt-1 text-[12px] leading-relaxed text-slate-400">{a.description}</p>
-                  <div className="mt-1.5 font-mono text-[11px] text-azure">
-                    ⌁ {a.target}{a.attack_id ? ` · ${a.attack_id}` : ""}
-                  </div>
+                  <div className="mt-1.5 font-mono text-[11px] text-azure">⌁ {a.target}{a.attack_id ? ` · ${a.attack_id}` : ""}</div>
                 </div>
               </div>
               {a.status === "proposed" && (
@@ -74,6 +61,6 @@ export default function ApprovalQueue({ actions, onDecide }) {
           ))}
         </AnimatePresence>
       </div>
-    </GlassCard>
+    </Panel>
   );
 }
