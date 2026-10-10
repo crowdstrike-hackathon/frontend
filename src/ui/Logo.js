@@ -4,9 +4,7 @@ import { cn } from "../lib/utils";
 export function LogoMark({ size = 28, className }) {
   const id = useId();
   const bg = `${id}-bg`;
-  const cloud = `${id}-cloud`;
-  const rose = `${id}-rose`;
-  const sky = `${id}-sky`;
+  const body = `${id}-body`;
   return (
     <svg
       width={size}
@@ -22,41 +20,31 @@ export function LogoMark({ size = 28, className }) {
           <stop offset="0%" stopColor="#ffffff" />
           <stop offset="100%" stopColor="#dbeefe" />
         </linearGradient>
-        <linearGradient id={cloud} x1="0" y1="0" x2="0" y2="1">
+        <linearGradient id={body} x1="0" y1="0" x2="0" y2="1">
           <stop offset="0%" stopColor="#ffffff" />
-          <stop offset="100%" stopColor="#e9f5ff" />
-        </linearGradient>
-        <linearGradient id={rose} x1="8" y1="24" x2="24" y2="8" gradientUnits="userSpaceOnUse">
-          <stop offset="0%" stopColor="#fb7185" />
-          <stop offset="100%" stopColor="#e11d48" />
-        </linearGradient>
-        <linearGradient id={sky} x1="24" y1="24" x2="8" y2="8" gradientUnits="userSpaceOnUse">
-          <stop offset="0%" stopColor="#38bdf8" />
-          <stop offset="100%" stopColor="#0284c7" />
+          <stop offset="100%" stopColor="#7dd3fc" />
         </linearGradient>
       </defs>
 
       <rect x="1" y="1" width="30" height="30" rx="9" fill={`url(#${bg})`} stroke="#bae6fd" />
 
-      <g fill={`url(#${cloud})`}>
-        <circle cx="12.5" cy="19.5" r="4.2" />
-        <circle cx="17.5" cy="17" r="5.4" />
-        <circle cx="21.5" cy="20" r="4" />
-        <rect x="8.3" y="20" width="15" height="5" rx="2.5" />
+      <g transform="translate(0,0.8)" fill="#38bdf8" opacity="0.35">
+        <rect x="6.5" y="17.6" width="18.5" height="6.8" rx="3.4" />
+        <circle cx="12" cy="17.8" r="4.5" />
+        <circle cx="17.6" cy="14.8" r="5.8" />
+        <circle cx="21.6" cy="17.9" r="4.3" />
       </g>
 
-      <g strokeLinecap="round" strokeLinejoin="round">
-        <line x1="8.5" y1="23.5" x2="23.5" y2="8.5" stroke={`url(#${rose})`} strokeWidth="2.6" />
-        <line x1="9.2" y1="20.4" x2="11.7" y2="22.9" stroke={`url(#${rose})`} strokeWidth="2.2" />
-        <circle cx="8.5" cy="23.5" r="1.7" fill="#fb7185" />
-
-        <line x1="23.5" y1="23.5" x2="8.5" y2="8.5" stroke={`url(#${sky})`} strokeWidth="2.6" />
-        <line x1="20.3" y1="22.9" x2="22.8" y2="20.4" stroke={`url(#${sky})`} strokeWidth="2.2" />
-        <circle cx="23.5" cy="23.5" r="1.7" fill="#38bdf8" />
+      <g fill={`url(#${body})`}>
+        <rect x="6.5" y="17.6" width="18.5" height="6.8" rx="3.4" />
+        <circle cx="12" cy="17.8" r="4.5" />
+        <circle cx="17.6" cy="14.8" r="5.8" />
+        <circle cx="21.6" cy="17.9" r="4.3" />
       </g>
 
-      <path d="M16 11.4 L19.6 16 L16 20.6 L12.4 16 Z" fill="#ffffff" stroke="#7dd3fc" strokeWidth="0.8" />
-      <path d="M16 13.4 L18 16 L16 18.6 L14 16 Z" fill="#0ea5e9" />
+      <ellipse cx="16" cy="13.4" rx="6.2" ry="2.1" fill="#ffffff" opacity="0.65" />
+
+      <path d="M24 6.6 L25.1 9.1 L27.6 10.2 L25.1 11.3 L24 13.8 L22.9 11.3 L20.4 10.2 L22.9 9.1 Z" fill="#fb7185" />
     </svg>
   );
 }

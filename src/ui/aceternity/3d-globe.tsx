@@ -3,7 +3,7 @@
 "use client";
 import React, { useRef, useMemo, useState, useCallback, Suspense } from "react";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
-import { OrbitControls, Html, useTexture } from "@react-three/drei";
+import { OrbitControls, useTexture } from "@react-three/drei";
 import * as THREE from "three";
 import { cn } from "../../lib/utils";
 
@@ -132,6 +132,8 @@ function Marker({
   const groupRef = useRef<THREE.Group>(null);
   const imageGroupRef = useRef<THREE.Group>(null);
   const { camera } = useThree();
+  const texture = useTexture(marker.src);
+  texture.colorSpace = THREE.SRGBColorSpace;
 
   // Surface position (where the line starts)
   const surfacePosition = useMemo(() => {
@@ -212,38 +214,16 @@ function Marker({
 
       {/* Circular image at the top */}
       <group ref={imageGroupRef} position={topPosition}>
-        <Html
-          transform
-          center
-          sprite
-          distanceFactor={10}
-          style={{
-            pointerEvents: isVisible ? "auto" : "none",
-            opacity: isVisible ? 1 : 0,
-            transition: "opacity 0.15s ease-out",
-          }}
+        {/* A WebGL sprite rather than drei's <Html>: Html mounts its own React root per
+            marker, which throws "removeChild" errors under React 19 strict mode. */}
+        <sprite
+          scale={hovered ? 0.25 : 0.2}
+          onPointerOver={handlePointerEnter}
+          onPointerOut={handlePointerLeave}
+          onClick={handleClick}
         >
-          <div
-            className={cn(
-              "cursor-pointer overflow-hidden rounded-full bg-neutral-900 shadow-lg transition-transform duration-200",
-              hovered && "scale-125 shadow-xl ring-1 ring-white/50",
-            )}
-            style={{
-              width: "8px",
-              height: "8px",
-            }}
-            onMouseEnter={handlePointerEnter}
-            onMouseLeave={handlePointerLeave}
-            onClick={handleClick}
-          >
-            <img
-              src={marker.src}
-              alt={marker.label || "Marker"}
-              className="h-full w-full object-cover"
-              draggable={false}
-            />
-          </div>
-        </Html>
+          <spriteMaterial map={texture} transparent toneMapped={false} />
+        </sprite>
       </group>
     </group>
   );
@@ -472,15 +452,7 @@ function Scene({ markers, config, onMarkerClick, onMarkerHover }: SceneProps) {
 // ============================================================================
 
 function LoadingFallback() {
-  return (
-    <Html center>
-      <div className="flex shrink-0 flex-col items-center gap-3">
-        <span className="inline-block shrink-0 text-sm text-neutral-400">
-          Loading globe...
-        </span>
-      </div>
-    </Html>
-  );
+  return null;
 }
 
 // ============================================================================

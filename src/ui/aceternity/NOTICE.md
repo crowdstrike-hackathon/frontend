@@ -14,7 +14,8 @@ stretch to the row instead of using a fixed aspect ratio, which widened their co
 (icons grow downward, tooltips and mobile menu open below) and its items accept `onClick`. `NavItems` in the resizable navbar accept a per-item
 `onClick` and `active` flag; the navbar also has an always-on glass surface and a faster
 resize spring (stock: stiffness 200, damping 50). `Globe3D` now honours its
-`initialRotation` config (the shipped component declares it but never reads it). The
+`initialRotation` config (the shipped component declares it but never reads it), and draws marker
+images as WebGL sprites instead of drei `<Html>`, which crashes under React 19 strict mode. The
 `SplitFlapBoard` and `widgets` files in this directory are original to this project and
 not part of Aceternity UI.
 
