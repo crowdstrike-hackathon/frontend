@@ -4,27 +4,9 @@ module.exports = {
   content: ["./src/**/*.{js,jsx,ts,tsx}", "./public/index.html"],
   theme: {
     extend: {
-      colors: {
-        ink: {
-          950: "#05060a",
-          900: "#0a0c12",
-          850: "#0e111a",
-          800: "#141826",
-          700: "#1b2130",
-          600: "#2a3342",
-        },
-        red: { DEFAULT: "#fc2947", glow: "#ff4d6a" },
-        azure: "#3da5ff",
-        lime: "#2ee6a0",
-        amber: "#f5a623",
-      },
       fontFamily: {
-        sans: ["Inter", "-apple-system", "BlinkMacSystemFont", "Segoe UI", "sans-serif"],
-        mono: ["JetBrains Mono", "SF Mono", "Menlo", "monospace"],
-      },
-      boxShadow: {
-        glow: "0 0 40px -10px rgba(252,41,71,0.45)",
-        "glow-blue": "0 0 40px -10px rgba(61,165,255,0.45)",
+        sans: ["Geist", "-apple-system", "BlinkMacSystemFont", "Segoe UI", "sans-serif"],
+        mono: ["Geist Mono", "SF Mono", "Menlo", "monospace"],
       },
       animation: {
         shimmer: "shimmer 2.5s linear infinite",

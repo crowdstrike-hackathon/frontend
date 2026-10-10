@@ -1,8 +1,8 @@
 import { render, screen } from "@testing-library/react";
 import App from "./App";
 
-test("renders the Sentinel brand", async () => {
+test("renders the Riposte brand", async () => {
   render(<App />);
-  const brand = await screen.findAllByText(/SENTINEL/i);
+  const brand = await screen.findAllByText(/RIPOSTE/i);
   expect(brand.length).toBeGreaterThan(0);
 });

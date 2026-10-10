@@ -7,11 +7,9 @@ import EventTimeline from "../components/EventTimeline";
 import InvestigationFeed from "../components/InvestigationFeed";
 import ApprovalQueue from "../components/ApprovalQueue";
 import Scoreboard from "../components/Scoreboard";
-import { SpotlightNew, AnimatedTooltip } from "../ui/aceternity";
+import { AnimatedTooltip } from "../ui/aceternity";
 import { avatar } from "../lib/avatars";
 
-const SPOT_RED = "radial-gradient(68.54% 68.72% at 55.02% 31.46%, hsla(349, 97%, 62%, 0.08) 0, hsla(349, 90%, 50%, 0.03) 50%, transparent 80%)";
-const SPOT_BLUE = "radial-gradient(50% 50% at 50% 50%, hsla(210, 100%, 62%, 0.07) 0, hsla(210, 90%, 50%, 0.02) 80%, transparent 100%)";
 
 export default function Dashboard() {
   const [meta, setMeta] = useState(null);
@@ -98,27 +96,26 @@ export default function Dashboard() {
 
   const providers = meta
     ? [
-        { id: 2, name: meta.red.provider, designation: `Red · ${meta.red.model}`, image: avatar("R", "#fc2947", "#ff8a5b") },
-        { id: 1, name: meta.blue.provider, designation: `Blue · ${meta.blue.model}`, image: avatar("B", "#3da5ff", "#2ee6a0") },
+        { id: 2, name: meta.red.provider, designation: `Red · ${meta.red.model}`, image: avatar("R", "#e11d48", "#fb7185") },
+        { id: 1, name: meta.blue.provider, designation: `Blue · ${meta.blue.model}`, image: avatar("B", "#0284c7", "#38bdf8") },
       ]
     : [];
 
   return (
     <div className="relative flex h-full flex-col overflow-hidden">
-      <SpotlightNew gradientFirst={SPOT_RED} gradientSecond={SPOT_BLUE} translateY={-260} height={900} />
 
-      <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} className="relative z-10 flex items-center gap-4 border-b border-white/5 px-6 py-4">
+      <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} className="relative z-10 flex items-center gap-4 px-6 pb-1 pt-5">
         <div>
-          <h1 className="text-lg font-bold tracking-tight">War Room</h1>
-          <p className="text-xs text-neutral-500">Autonomous red vs blue engagement</p>
+          <h1 className="text-lg font-semibold tracking-tight text-slate-900">Dashboard</h1>
+          <p className="text-xs text-slate-500">Autonomous red vs blue engagement</p>
         </div>
         <div className="ml-auto flex items-center gap-5">
           {providers.length > 0 && (
             <div className="hidden items-center gap-3 sm:flex">
-              <div className="flex items-center pl-2">
+              <div className="mr-4 flex items-center pl-2">
                 <AnimatedTooltip items={providers} />
               </div>
-              <span className="text-xs text-neutral-500">red · blue engines</span>
+              <span className="text-xs text-slate-500">red · blue engines</span>
             </div>
           )}
           <ModePill live={live} />
@@ -159,7 +156,8 @@ export default function Dashboard() {
 
 function ModePill({ live }) {
   return (
-    <span className={`rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider ring-1 ${live ? "bg-lime/10 text-lime ring-lime/30" : "bg-amber/10 text-amber ring-amber/30"}`}>
+    <span className="flex items-center gap-1.5 rounded-full border border-slate-200 bg-white px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-slate-700">
+      <span className={`h-1.5 w-1.5 rounded-full ${live ? "bg-emerald-500" : "bg-amber-500"}`} />
       {live ? "Live" : "Mock"}
     </span>
   );

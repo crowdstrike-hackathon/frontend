@@ -1,6 +1,6 @@
 const BASE = process.env.REACT_APP_API_BASE || "http://localhost:8000";
 
-const TOKEN_KEY = "sentinel_token";
+const TOKEN_KEY = "riposte_token";
 
 export function getToken() {
   try {

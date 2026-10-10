@@ -1,4 +1,4 @@
-@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500;600&display=swap");
 
 @tailwind base;
 @tailwind components;
@@ -10,44 +10,27 @@
   #root {
     height: 100%;
   }
+  html {
+    scroll-behavior: smooth;
+  }
+  /* No rubber-band overscroll: the page must not pull down past the hero. */
+  html,
   body {
-    @apply bg-ink-950 text-slate-100 font-sans antialiased;
+    overscroll-behavior: none;
+  }
+  body {
+    @apply bg-white font-sans text-slate-900 antialiased;
     margin: 0;
   }
 }
 
 @layer utilities {
-  .glass {
-    background: rgba(20, 24, 38, 0.55);
-    backdrop-filter: blur(14px);
-    -webkit-backdrop-filter: blur(14px);
-  }
-  .border-hair {
-    border: 1px solid rgba(255, 255, 255, 0.07);
-  }
-  .text-gradient {
-    background: linear-gradient(90deg, #fff, #9fb4d8);
-    -webkit-background-clip: text;
-    background-clip: text;
-    color: transparent;
-  }
-  .text-gradient-red {
-    background: linear-gradient(90deg, #fc2947, #ff8a5b);
-    -webkit-background-clip: text;
-    background-clip: text;
-    color: transparent;
-  }
-  .grid-bg {
-    background-image: linear-gradient(rgba(255, 255, 255, 0.025) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(255, 255, 255, 0.025) 1px, transparent 1px);
-    background-size: 44px 44px;
-  }
   .scrollbar-thin::-webkit-scrollbar {
     width: 7px;
     height: 7px;
   }
   .scrollbar-thin::-webkit-scrollbar-thumb {
-    background: rgba(255, 255, 255, 0.12);
+    background: rgba(15, 23, 42, 0.18);
     border-radius: 6px;
   }
   .scrollbar-thin::-webkit-scrollbar-track {

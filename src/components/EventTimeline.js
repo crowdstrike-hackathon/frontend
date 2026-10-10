@@ -16,14 +16,14 @@ export default function EventTimeline({ events, narrative, trusted, suspected, r
     <Panel
       className="flex-1"
       dots={false}
-      icon={<Radio className="h-4 w-4 text-red" />}
+      icon={<Radio className="h-4 w-4 text-rose-600" />}
       title="Live telemetry"
       right={
         <>
           <span className="text-xs text-slate-500">adversary AI emitting logs</span>
           {running && (
-            <span className="flex items-center gap-1.5 text-xs text-red">
-              <span className="h-2 w-2 animate-ping rounded-full bg-red" /> streaming
+            <span className="flex items-center gap-1.5 text-xs text-rose-600">
+              <span className="h-2 w-2 animate-ping rounded-full bg-rose-500" /> streaming
             </span>
           )}
         </>
@@ -36,16 +36,16 @@ export default function EventTimeline({ events, narrative, trusted, suspected, r
               key={narrative}
               initial={{ opacity: 0, y: -6 }}
               animate={{ opacity: 1, y: 0 }}
-              className="mb-3 flex items-center gap-2 rounded-lg border border-red/20 bg-red/5 px-3 py-2 font-mono text-xs text-red/90"
+              className="mb-3 flex items-start gap-2 rounded-lg border border-rose-500/20 bg-rose-500/5 px-3 py-2 font-mono text-xs text-rose-600/90"
             >
-              <span className="font-bold">RED ▸</span> {narrative}
+              <span className="shrink-0 whitespace-nowrap font-bold">RED ▸</span> {narrative}
             </motion.div>
           )}
         </AnimatePresence>
 
         {events.length === 0 && (
           <div className="flex h-full flex-col items-center justify-center py-16 text-center text-sm text-slate-500">
-            <ShieldAlert className="mb-3 h-8 w-8 text-slate-700" />
+            <ShieldAlert className="mb-3 h-8 w-8 text-slate-300" />
             No telemetry yet. Launch a scenario to begin the engagement.
           </div>
         )}
@@ -64,28 +64,28 @@ export default function EventTimeline({ events, narrative, trusted, suspected, r
                   initial={{ opacity: 0, x: -12 }}
                   animate={{ opacity: isSuspect ? 0.6 : 1, x: 0 }}
                   transition={{ duration: 0.25 }}
-                  className="group flex gap-3 rounded-xl border border-white/5 bg-white/[0.02] px-3 py-2.5 transition hover:bg-white/[0.04]"
-                  style={{ borderLeft: `2px solid ${isTrusted ? "#3da5ff" : "transparent"}` }}
+                  className="group flex gap-3 rounded-xl border border-slate-900/10 bg-white/70 px-3 py-2.5 transition hover:bg-white"
+                  style={{ borderLeft: `2px solid ${isTrusted ? "#0284c7" : "transparent"}` }}
                 >
                   <div className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-lg" style={{ background: `${color}1a`, color }}>
                     <Icon className="h-3.5 w-3.5" />
                   </div>
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-2">
-                      <span className="rounded px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-slate-400 ring-1 ring-white/10">
+                      <span className="rounded px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-slate-600 ring-1 ring-slate-900/15">
                         {e.domain}
                       </span>
                       {e.attack_id && e.attack_id !== "DECEPTION" && (
-                        <span className="font-mono text-[10px] text-red/80">{e.attack_id}</span>
+                        <span className="font-mono text-[10px] text-rose-600/80">{e.attack_id}</span>
                       )}
                       <span className="ml-auto h-1.5 w-1.5 rounded-full" style={{ background: color }} />
                     </div>
-                    <p className="mt-1 text-[13px] leading-snug text-slate-200">{e.message}</p>
+                    <p className="mt-1 text-[13px] leading-snug text-slate-800">{e.message}</p>
                     <div className="mt-1 flex items-center gap-2 font-mono text-[11px] text-slate-500">
                       <span>{e.source}</span>
                       {e.actor && <span>· {e.actor}</span>}
                       {e.host && <span>· {e.host}</span>}
-                      {isSuspect && <span className="ml-auto text-amber">⚑ flagged deception</span>}
+                      {isSuspect && <span className="ml-auto text-amber-600">⚑ flagged deception</span>}
                     </div>
                   </div>
                 </motion.div>
