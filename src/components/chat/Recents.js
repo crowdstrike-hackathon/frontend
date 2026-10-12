@@ -70,7 +70,7 @@ function Row({ row, active, disabled, onOpen, onRename, onArchive, onAskDelete }
       <button
         disabled={disabled}
         onClick={() => onOpen(row.id)}
-        className="block w-full rounded-md px-2 py-1.5 pr-8 text-left disabled:cursor-not-allowed disabled:opacity-50"
+        className="block w-full rounded-md px-2 py-1.5 pr-8 text-left disabled:cursor-default"
       >
         <div className="truncate text-[13.5px] text-ink">{row.title}</div>
         <div className="mt-px truncate text-[11.5px] text-ink-3">

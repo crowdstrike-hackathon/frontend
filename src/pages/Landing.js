@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "react-router-dom";
-import { ArrowRight, Building2, Check, CircleAlert, EyeOff, Copy, Cpu, Hand, Inbox, Rocket, Route, Scale, ShieldCheck, X } from "lucide-react";
+import { ArrowRight, Check, EyeOff, Copy, Cpu, Hand, Inbox, Route, ShieldCheck, X } from "lucide-react";
 import {
   CloudShader,
   TextFlippingBoard,
@@ -299,24 +299,38 @@ const STEPS = [
   { title: "Explain", content: <StepCard>Every decision comes with the reason and the source of each value, so a security team can audit what the agent did and why it was stopped.</StepCard> },
 ];
 
+const THREATS = [
+  {
+    name: "Prompt injection",
+    attack: "Text inside an email tells the agent what to do, politely or not.",
+    defense: "Email text is labelled untrusted. A tool argument that traces back only to it is blocked or held, and so is any action the operator never asked for.",
+  },
+  {
+    name: "Tool misuse",
+    attack: "A refund far above the limit, the same refund in slices, or a call into another customer's account.",
+    defense: "Refunds above $200 wait for a person, and slices are added up. Calls outside the account the email belongs to are blocked.",
+  },
+  {
+    name: "Data exfiltration",
+    attack: "A key or a customer record sent to an address its owner does not control, in plain text, encoded, or hinted at.",
+    defense: "A secret may only go to its owner's address on file. Encoded and partial copies are caught, and a decoy-key re-run catches replies that leak it without containing it.",
+  },
+];
+
 const BUYERS = [
   {
-    icon: <CircleAlert className="h-4 w-4 text-rose-600" />,
     title: "The problem",
     text: "Agents read text written by strangers and then call tools with real permissions. One email, ticket or web page can turn a helpful agent into an insider.",
   },
   {
-    icon: <Building2 className="h-4 w-4 text-sky-600" />,
     title: "Who uses it and who pays",
     text: "Teams shipping agents that touch customer data: support, IT helpdesk, finance operations. The security team buys it, the same way it buys an API gateway or a WAF.",
   },
   {
-    icon: <Scale className="h-4 w-4 text-emerald-600" />,
     title: "How it is different",
     text: "Prompt filters and classifier guardrails judge the wording of the input, so a polite attack passes and an innocent word gets flagged. Riposte ignores the wording and checks the action.",
   },
   {
-    icon: <Rocket className="h-4 w-4 text-amber-600" />,
     title: "From prototype to launch",
     text: "Today it is a gateway around one support agent, with a live inbox, a preview of every plan and an approval step. Next is a drop-in proxy for MCP and function-calling APIs, policy as code, and an approval queue in Slack.",
   },
@@ -422,9 +436,23 @@ export default function Landing() {
       </section>
 
       <section id="attacks" className="scroll-mt-24 bg-gradient-to-b from-sky-50 to-white py-24 md:py-28">
-        <SectionHeading eyebrow="Attacks" sub="The console has a live inbox. Email the support desk yourself and watch what the agent tries to do. These are the ways people try.">
+        <SectionHeading eyebrow="Attacks" sub="Prompt injection, tool misuse and data exfiltration. Email the support desk yourself and try any of them.">
           What it is built to stop
         </SectionHeading>
+        <div className="mx-auto mb-14 max-w-5xl px-4 md:px-8">
+          <p className="mb-5 text-center font-mono text-xs uppercase tracking-[0.18em] text-slate-500">Track 3 names three threats. Riposte defends against all three.</p>
+          <div className="grid border-t border-slate-200 md:grid-cols-3 md:divide-x md:divide-slate-200">
+            {THREATS.map((t, i) => (
+              <div key={t.name} className="border-b border-slate-200 py-7 md:px-7 md:first:pl-0 md:last:pr-0">
+                <span className="font-mono text-xs text-slate-400">{String(i + 1).padStart(2, "0")}</span>
+                <h3 className="mt-2 text-xl font-semibold tracking-tight text-slate-900">{t.name}</h3>
+                <p className="mt-3 text-sm leading-relaxed text-slate-600">{t.attack}</p>
+                <p className="mt-4 text-[11px] font-semibold uppercase tracking-[0.14em] text-sky-700">What Riposte does</p>
+                <p className="mt-1.5 text-sm leading-relaxed text-slate-800">{t.defense}</p>
+              </div>
+            ))}
+          </div>
+        </div>
         <InfiniteMovingCards items={TECHS} speed="slow" className="mx-auto" />
         <InfiniteMovingCards items={[...TECHS].reverse()} speed="slow" direction="right" className="mx-auto mt-4" />
       </section>
@@ -433,17 +461,15 @@ export default function Landing() {
         <SectionHeading eyebrow="Who it's for" sub="Built for the teams putting agents in front of customers this year.">
           A security control, not a prompt
         </SectionHeading>
-        <div className="mx-auto grid max-w-5xl gap-4 md:grid-cols-2">
-          {BUYERS.map((b) => (
-            <div key={b.title} className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-              <div className="flex items-center gap-2.5">
-                <span className="grid h-8 w-8 place-items-center rounded-xl bg-sky-50 ring-1 ring-sky-100">{b.icon}</span>
-                <h3 className="text-base font-semibold text-slate-900">{b.title}</h3>
-              </div>
-              <p className="mt-3 text-sm leading-relaxed text-slate-600">{b.text}</p>
+        <dl className="mx-auto max-w-4xl border-t border-slate-200">
+          {BUYERS.map((b, i) => (
+            <div key={b.title} className="grid gap-2 border-b border-slate-200 py-7 md:grid-cols-[3rem_15rem_1fr] md:gap-6 md:py-9">
+              <span className="font-mono text-xs leading-7 text-slate-400">{String(i + 1).padStart(2, "0")}</span>
+              <dt className="text-xl font-semibold tracking-tight text-slate-900">{b.title}</dt>
+              <dd className="text-base leading-relaxed text-slate-600">{b.text}</dd>
             </div>
           ))}
-        </div>
+        </dl>
       </section>
 
       <section className="px-4 pb-10 md:px-8">

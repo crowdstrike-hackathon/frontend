@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Ban, Check, ChevronDown, CircleDollarSign, FileText, Hand, KeyRound, Mail, MessageSquareReply, Search, UserRound, X } from "lucide-react";
+import { AtSign, Ban, Check, ChevronDown, CircleDollarSign, FileText, Hand, KeyRound, Mail, MessageSquareReply, Search, UserRound, X } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "../ui/alert";
 import { Badge } from "../ui/badge";
 import { Button } from "../ui/button";
@@ -12,7 +12,8 @@ const TOOL_ICON = {
   read_ticket: FileText,
   search_kb: Search,
   get_customer: UserRound,
-  get_api_key: KeyRound,
+  create_login_link: KeyRound,
+  change_contact_email: AtSign,
   issue_refund: CircleDollarSign,
   send_email: Mail,
   reply: MessageSquareReply,

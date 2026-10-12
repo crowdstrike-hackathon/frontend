@@ -123,7 +123,7 @@ export default function AppShell({ onNew, newDisabled, sidebar, header, aside, a
             </button>
           </div>
           <nav className="flex shrink-0 flex-col gap-px px-2 pb-2">
-            <button onClick={onNew} disabled={newDisabled} className={cn(ROW, "text-left disabled:opacity-40")}>
+            <button onClick={onNew} disabled={newDisabled} className={cn(ROW, "text-left disabled:cursor-default")}>
               <SquarePen /> New chat
             </button>
           </nav>
@@ -158,7 +158,7 @@ export default function AppShell({ onNew, newDisabled, sidebar, header, aside, a
             </button>
           )}
           <Link to="/" aria-label="Riposte" className={cn("mr-1", !compact && "lg:hidden")}><LogoMark size={26} /></Link>
-          <button onClick={onNew} disabled={newDisabled} aria-label="New chat" className={cn(ICON, "disabled:opacity-40", !compact && "lg:hidden")}>
+          <button onClick={onNew} disabled={newDisabled} aria-label="New chat" className={cn(ICON, "disabled:cursor-default", !compact && "lg:hidden")}>
             <SquarePen className="h-4 w-4" />
           </button>
           <Link to="/settings" aria-label="Account and settings" className={cn(ICON, !compact && "lg:hidden")}>

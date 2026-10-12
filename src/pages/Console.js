@@ -56,7 +56,7 @@ function EmptyState() {
     <div className="mx-auto w-full max-w-2xl px-4 pb-6 pt-[8vh]">
       <h1 className="text-[30px] font-semibold leading-tight tracking-tight text-ink">Northwind support desk</h1>
       <p className="mt-2 max-w-xl text-[15px] leading-relaxed text-ink-3">
-        Northwind is a made-up API company. Nova is its AI support agent, and it can read tickets, fetch customers' API keys, issue refunds and send email. Riposte is the firewall between Nova and those tools.
+        Northwind is a made-up API company. Nova is its AI support agent, and it can read tickets, create sign-in links, change contact emails, issue refunds and send email. Riposte is the firewall between Nova and those tools.
       </p>
       <p className="mt-2 max-w-xl text-[15px] leading-relaxed text-ink-3">
         Open the Agent queue to see what Nova wants to do with each incoming email and what Riposte would allow, then hand it to Nova. Or chat with Nova here and type @ to bring in a ticket.

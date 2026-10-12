@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { CircleAlert, Filter, Info, Network } from "lucide-react";
 import { NovaMark } from "../../ui/Logo";
 import { Badge } from "../ui/badge";
@@ -62,6 +62,50 @@ function NoteRow({ item }) {
   );
 }
 
+function StreamedText({ text, live, onTyping }) {
+  const [shown, setShown] = useState(live ? 0 : text.length);
+  const end = useRef(null);
+  const target = useRef(text.length);
+  target.current = text.length;
+  const behind = shown < text.length;
+
+  useEffect(() => {
+    if (!behind) return undefined;
+    let frame;
+    let last = performance.now();
+    let carry = 0;
+    const tick = (now) => {
+      const left = target.current;
+      carry += ((now - last) / 1000) * 150;
+      last = now;
+      const step = Math.floor(carry);
+      if (step > 0) {
+        carry -= step;
+        setShown((n) => Math.min(left, n + step + Math.floor(Math.max(0, left - n - 500) / 20)));
+      }
+      frame = requestAnimationFrame(tick);
+    };
+    frame = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(frame);
+  }, [behind]);
+
+  useEffect(() => {
+    onTyping(behind);
+  }, [behind, onTyping]);
+
+  useEffect(() => {
+    if (behind && end.current) end.current.scrollIntoView({ block: "nearest" });
+  }, [shown, behind]);
+
+  return (
+    <>
+      {text.slice(0, Math.min(shown, text.length))}
+      {behind && <span className="ml-0.5 inline-block h-[1em] w-[2px] translate-y-[2px] animate-pulse bg-ink" />}
+      <span ref={end} />
+    </>
+  );
+}
+
 function Outcome({ turn, mode }) {
   const meta = OUTCOME[turn.outcome] || OUTCOME.error;
   const tone = TONE[meta.tone];
@@ -80,10 +124,12 @@ function Outcome({ turn, mode }) {
 }
 
 function Turn({ turn, chat, onDecide, deciding }) {
-  const [showMap, setShowMap] = React.useState(false);
+  const [showMap, setShowMap] = useState(false);
   const hasCalls = turn.items.some((i) => i.kind === "call");
   const cause = turn.items.find((i) => i.cause)?.cause || null;
   const done = turn.status !== "running";
+  const live = useRef(!done);
+  const [typing, setTyping] = useState(false);
   const thinking = !done && turn.thinking;
   const showOutcome = done && turn.outcome && (turn.acted || ["error", "cancelled", "interrupted"].includes(turn.outcome));
   return (
@@ -114,7 +160,7 @@ function Turn({ turn, chat, onDecide, deciding }) {
               {thinking && (
                 <Marker className="px-3 py-2">
                   <MarkerIcon><Spinner className="!size-3.5 text-brand" /></MarkerIcon>
-                  <MarkerContent>{turn.items.length ? "Working on the next step" : "Thinking"}</MarkerContent>
+                  <MarkerContent>{turn.thought || (turn.items.length ? "Working on the next step" : "Thinking")}</MarkerContent>
                 </Marker>
               )}
             </div>
@@ -132,10 +178,12 @@ function Turn({ turn, chat, onDecide, deciding }) {
           )}
           {turn.answer && (
             <Bubble variant="ghost">
-              <BubbleContent className="max-w-[68ch] whitespace-pre-wrap text-[14.5px] leading-relaxed text-ink">{turn.answer}</BubbleContent>
+              <BubbleContent className="max-w-[68ch] whitespace-pre-wrap text-[14.5px] leading-relaxed text-ink">
+                <StreamedText text={turn.answer} live={live.current} onTyping={setTyping} />
+              </BubbleContent>
             </Bubble>
           )}
-          {showOutcome && <Outcome turn={turn} mode={chat.mode} />}
+          {showOutcome && !typing && <Outcome turn={turn} mode={chat.mode} />}
         </MessageContent>
       </Message>
     </>

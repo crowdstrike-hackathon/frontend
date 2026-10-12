@@ -74,7 +74,7 @@ export default function SidePanel({ chat, compare, world }) {
     <ScrollArea className="h-full">
       <Section title="What you are looking at">
         <p className="text-[12.5px] leading-relaxed text-ink-3">
-          Nova is the agent. Riposte checks each tool call Nova makes and marks it allowed, held or blocked. The company, its customers and their keys are a sandbox, so nothing here is real data. The attacks and decisions are live.
+          Nova is the agent. Riposte checks each tool call Nova makes and marks it allowed, held or blocked. The company, its customers and their sign-in links are a sandbox, so nothing here is real data. The attacks and decisions are live.
         </p>
       </Section>
       <Section title="Same message, each mode">
@@ -104,7 +104,7 @@ export default function SidePanel({ chat, compare, world }) {
         </ul>
         {policy && (
           <p className="mt-3 text-[12px] leading-relaxed text-ink-3">
-            A key may only go to its owner's address on file. Refunds above ${policy.refund_limit} need a person. Internal mail: {policy.internal_domains.join(", ")}.
+            A sign-in link may only go to its owner's address on file. A new contact email needs a person unless you gave it. Refunds above ${policy.refund_limit} need a person. Internal mail: {policy.internal_domains.join(", ")}.
           </p>
         )}
       </Section>

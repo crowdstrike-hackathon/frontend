@@ -1,6 +1,6 @@
 import { ShieldAlert, ShieldCheck, ShieldQuestion, Hand, CircleCheck, CircleAlert } from "lucide-react";
 
-export const EVENT_TYPES = ["turn", "thinking", "call", "result", "hold", "hold_resolved", "filter", "note", "error", "answer_delta", "cause", "turn_done"];
+export const EVENT_TYPES = ["turn", "thinking", "call", "result", "hold", "hold_resolved", "filter", "note", "error", "answer_delta", "thought_delta", "cause", "turn_done"];
 
 export const MODE_LABEL = { off: "No defense", keyword: "Keyword filter", riposte: "Riposte" };
 
@@ -63,6 +63,7 @@ function patchCall(items, step, patch) {
 
 export function applyEvent(chat, e) {
   if (e.type === "answer_delta") return patchTurn(chat, e.turn, (t) => (t.status === "running" ? { ...t, thinking: false, answer: e.text } : t));
+  if (e.type === "thought_delta") return patchTurn(chat, e.turn, (t) => (t.status === "running" && t.thinking ? { ...t, thought: e.text } : t));
   if (e.seq <= chat.lastSeq) return chat;
   const next = { ...chat, lastSeq: e.seq };
   const turn = (fn) => patchTurn(next, e.turn, fn);
@@ -78,7 +79,7 @@ export function applyEvent(chat, e) {
         ],
       };
     case "thinking":
-      return turn((t) => ({ ...t, thinking: true, answer: "" }));
+      return turn((t) => ({ ...t, thinking: true, answer: "", thought: "" }));
     case "call":
       return turn((t) => ({
         ...t,

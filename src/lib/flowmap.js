@@ -6,7 +6,7 @@ const SOURCES = [
   [/^the text of ticket (.+)$/, (m) => ({ id: `ticket:${m[1]}`, label: "Ticket email", sub: `${m[1]} \u00b7 a stranger`, kind: "untrusted", icon: "mail" })],
   [/^the ticket sender$/, () => ({ id: "sender", label: "Ticket sender", sub: "The From address", kind: "requester", icon: "at" })],
   [/^the helpdesk account match$/, () => ({ id: "helpdesk", label: "Helpdesk match", sub: "Account on the ticket", kind: "trusted", icon: "match" })],
-  [/^the key vault$/, () => ({ id: "vault", label: "Key vault", sub: "Customers' API keys", kind: "trusted", icon: "key" })],
+  [/^the sign-in service$/, () => ({ id: "vault", label: "Sign-in service", sub: "One-time sign-in links", kind: "trusted", icon: "key" })],
   [/^the customer record for (.+)$/, (m) => ({ id: `record:${m[1]}`, label: "Customer record", sub: m[1], kind: "trusted", icon: "record" })],
   [/^the help center$/, () => ({ id: "kb", label: "Help center", sub: "Policy articles", kind: "trusted", icon: "book" })],
 ];
@@ -30,7 +30,8 @@ function actionSub(item) {
     case "read_ticket": return `Opened ${a.ticket_id || "the ticket"}`;
     case "search_kb": return `Searched “${short(a.query, 18)}”`;
     case "get_customer": return `Looked up ${a.customer_id || "a customer"}`;
-    case "get_api_key": return `Fetched ${a.customer_id || "a"}'s key`;
+    case "create_login_link": return `Sign-in link for ${a.customer_id || "an account"}`;
+    case "change_contact_email": return `New email ${short(a.new_email, 18)}`;
     case "issue_refund": return `$${a.amount} to ${a.customer_id || "an account"}`;
     case "send_email": return `Email to ${short(a.to, 20)}`;
     case "reply": return "Reply to the sender";
@@ -62,7 +63,7 @@ function edgeKind(flow) {
 }
 
 function destination(item) {
-  if (item.tool === "issue_refund") {
+  if (item.tool === "issue_refund" || item.tool === "change_contact_email") {
     const id = item.args?.customer_id;
     return id ? { id: `account:${id}`, label: `Account ${id}`, kind: "account" } : null;
   }
@@ -120,6 +121,12 @@ export function buildFlowGraph(turn) {
       o.status = "leaked";
       o.leak = hit.summary;
       for (const e of edges) if (e.to === o.id) e.kind = "leak";
+    }
+    const taken = (turn.incidents || []).find((i) => i.kind === "account" && `account:${i.customer_id}` === o.id);
+    if (taken) {
+      o.status = "leaked";
+      o.leak = taken.summary;
+      for (const e of edges) if (e.to === o.id && actions.find((a) => a.id === e.from)?.tool === "change_contact_email") e.kind = "leak";
     }
   }
 

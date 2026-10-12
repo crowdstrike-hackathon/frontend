@@ -15,8 +15,10 @@ const VERDICT = {
 function describe(step) {
   const a = step.args || {};
   switch (step.tool) {
-    case "get_api_key":
-      return `Fetch the API key for ${a.customer_id || "a customer"}`;
+    case "create_login_link":
+      return `Create a sign-in link for ${a.customer_id || "a customer"}`;
+    case "change_contact_email":
+      return `Change the contact email for ${a.customer_id || "a customer"} to ${a.new_email || "a new address"}`;
     case "get_customer":
       return `Look up customer ${a.customer_id || ""}`.trim();
     case "search_kb":
