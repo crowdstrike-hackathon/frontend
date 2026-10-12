@@ -286,10 +286,10 @@ function EmailWithCause({ text, cause }) {
 }
 
 const DEMO = [
-  { tab: "No defense", at: 0, text: "An email asks support to move the account to a new contact address and send the sign-in link there. With nothing checking the tool calls, Nova changes the email on file and the account is taken over." },
-  { tab: "Riposte on", at: 7.5, text: "Same email, same model. The new address appears only in the email, so Riposte holds the account change and the sign-in link. A person denies both, and nothing on the account changes." },
-  { tab: "See why it stopped", at: 17.5, text: "The information map traces it: the stranger's email steered two actions, and both were stopped before anything left the sandbox." },
-];
+  { tab: "The inbox", at: 0, text: "Every email in the queue shows what Nova would do with it and what Riposte would allow, hold or block, before anything is sent." },
+  { tab: "A person in the loop", at: 10, text: "Handed to Nova, it tries to change the account's contact email. That address came only from the email, so Riposte holds the action and a person denies it." },
+  { tab: "Blocked anyway", at: 22, text: "Even after the sign-in link is created, Riposte blocks sending it to the new address. A secret can only go to the address on file." },
+]
 
 function Demo() {
   const video = useRef(null);
@@ -312,7 +312,7 @@ function Demo() {
 
   return (
     <section id="demo" className="scroll-mt-24 px-4 pt-24 md:px-8 md:pt-32">
-      <SectionHeading eyebrow="Demo" sub="One support inbox, one agent, and the same email with and without the firewall.">
+      <SectionHeading eyebrow="Demo" sub="From the queue to the block: the preview, the hand-off, and a person in the loop.">
         Watch an email try to take over an account
       </SectionHeading>
       <div className="mx-auto max-w-5xl">
