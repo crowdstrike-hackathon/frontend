@@ -1,4 +1,4 @@
-import React, { useMemo } from "react";
+import React, { useMemo, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { ArrowRight, Check, EyeOff, Copy, Cpu, Hand, Inbox, Route, ShieldCheck, X } from "lucide-react";
 import {
@@ -17,9 +17,11 @@ import demoRun from "../assets/landing/demo-run.json";
 import { useAuth } from "../context/AuthContext";
 import { DUSK, TECHS } from "../lib/content";
 import shotBlock from "../assets/landing/console-block.jpg";
+import demoVideo from "../assets/landing/console-demo.mp4";
+import demoPoster from "../assets/landing/console-demo-poster.jpg";
 
 const NAV = [
-  { name: "Demo", link: "#trace" },
+  { name: "Demo", link: "#demo" },
   { name: "Why", link: "#why" },
   { name: "How it works", link: "#how" },
   { name: "Attacks", link: "#attacks" },
@@ -283,6 +285,72 @@ function EmailWithCause({ text, cause }) {
   );
 }
 
+const DEMO = [
+  { tab: "No defense", at: 0, text: "An email asks support to move the account to a new contact address and send the sign-in link there. With nothing checking the tool calls, Nova changes the email on file and the account is taken over." },
+  { tab: "Riposte on", at: 7.5, text: "Same email, same model. The new address appears only in the email, so Riposte holds the account change and the sign-in link. A person denies both, and nothing on the account changes." },
+  { tab: "See why it stopped", at: 17.5, text: "The information map traces it: the stranger's email steered two actions, and both were stopped before anything left the sandbox." },
+];
+
+function Demo() {
+  const video = useRef(null);
+  const [idx, setIdx] = useState(0);
+
+  const onTime = () => {
+    const t = video.current ? video.current.currentTime : 0;
+    let next = 0;
+    DEMO.forEach((step, i) => { if (t >= step.at) next = i; });
+    setIdx(next);
+  };
+
+  const jump = (i) => {
+    const el = video.current;
+    if (!el) return;
+    el.currentTime = DEMO[i].at;
+    el.play().catch(() => {});
+    setIdx(i);
+  };
+
+  return (
+    <section id="demo" className="scroll-mt-24 px-4 pt-24 md:px-8 md:pt-32">
+      <SectionHeading eyebrow="Demo" sub="One support inbox, one agent, and the same email with and without the firewall.">
+        Watch an email try to take over an account
+      </SectionHeading>
+      <div className="mx-auto max-w-5xl">
+        <div className="overflow-hidden rounded-xl border border-slate-200 bg-sky-50 shadow-xl md:rounded-2xl">
+          <video
+            ref={video}
+            src={demoVideo}
+            poster={demoPoster}
+            className="block aspect-[16/10] w-full"
+            autoPlay
+            muted
+            loop
+            playsInline
+            controls
+            preload="metadata"
+            onTimeUpdate={onTime}
+            aria-label="Screen recording of the Riposte console: an email asks support to change an account's contact address and send the sign-in link there. With the defense off the account is taken over; with Riposte on the change is held and denied."
+          />
+        </div>
+        <div className="mx-auto mt-6 flex max-w-3xl flex-wrap justify-center gap-2">
+          {DEMO.map((step, i) => (
+            <button
+              key={step.tab}
+              aria-pressed={i === idx}
+              onClick={() => jump(i)}
+              className={`rounded-full border px-4 py-1.5 text-sm font-semibold transition ${i === idx ? "border-sky-700 bg-sky-700 text-white" : "border-slate-200 bg-white text-slate-600 hover:border-slate-300 hover:text-slate-900"}`}
+            >
+              <span className={`mr-1.5 font-mono text-xs ${i === idx ? "text-sky-100" : "text-slate-400"}`}>{i + 1}</span>
+              {step.tab}
+            </button>
+          ))}
+        </div>
+        <p className="mx-auto mt-4 min-h-[3.5rem] max-w-2xl text-center text-base leading-relaxed text-slate-600">{DEMO[idx].text}</p>
+      </div>
+    </section>
+  );
+}
+
 function SeeWhatHappened() {
   const turn = useMemo(
     () => fromSnapshot({ id: "landing-demo", mode: demoRun.mode, events: demoRun.events, status: "done" }).turns[0],
@@ -324,6 +392,8 @@ export default function Landing() {
   return (
     <div className="w-full overflow-x-clip bg-white">
       <Hero appHref={appHref} signedIn={!!user} />
+
+      <Demo />
 
       <SeeWhatHappened />
 
