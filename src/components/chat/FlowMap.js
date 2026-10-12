@@ -97,7 +97,7 @@ function Edge({ from, to, kind, dim, label }) {
   );
 }
 
-export default function FlowMap({ turn }) {
+export default function FlowMap({ turn, showCause = true }) {
   const graph = useMemo(() => buildFlowGraph(turn), [turn]);
   const [focus, setFocus] = useState(null);
   const [shown, setShown] = useState(Infinity);
@@ -199,7 +199,7 @@ export default function FlowMap({ turn }) {
       <div className={cn("border-t border-white/10 px-4 py-3 text-[13px] leading-relaxed", focus ? "text-slate-100" : "text-slate-300")}>
         {info}
       </div>
-      {(graph.cause || graph.finding) && <EmailCause cause={graph.cause} />}
+      {showCause && (graph.cause || graph.finding) && <EmailCause cause={graph.cause} />}
     </div>
   );
 }
