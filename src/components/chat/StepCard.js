@@ -89,28 +89,54 @@ function Verdict({ item, onDecide, busy }) {
   );
 }
 
-function Result({ item }) {
+// The tool result as returned. When this is the email the agent read and the cause finder pinned the
+// sentence that led to a flagged action, that sentence (and only that) is marked red in place.
+function Result({ item, cause }) {
   const result = item.result;
   if (!result || result.blocked || result.denied) return null;
+  const text = String(result.text || "");
+  let content = text;
+  const offset = cause?.stable && cause.guilty?.length && cause.body ? text.indexOf(cause.body) : -1;
+  if (offset >= 0) {
+    content = [];
+    let at = 0;
+    [...cause.guilty].sort((a, b) => a[0] - b[0]).forEach(([start, end], i) => {
+      const from = offset + start;
+      const to = offset + end;
+      if (from > at) content.push(<span key={`t${i}`}>{text.slice(at, from)}</span>);
+      content.push(
+        <mark key={`g${i}`} className="rounded-[3px] bg-red-100 px-0.5 text-red-800 ring-1 ring-red-300">{text.slice(from, to)}</mark>,
+      );
+      at = to;
+    });
+    if (at < text.length) content.push(<span key="end">{text.slice(at)}</span>);
+  }
   return (
     <div>
       <div className="mb-1 flex items-center gap-2 text-[11.5px] text-ink-3">
         {result.ok ? "Returned" : "Tool error"}
         {result.label === "untrusted" && <Badge variant="untrusted">untrusted content</Badge>}
       </div>
-      <pre className="max-h-40 overflow-auto whitespace-pre-wrap break-words rounded-sm bg-paper-3 px-2.5 py-2 font-mono text-[11.5px] leading-relaxed text-ink-2">{result.text}</pre>
+      <pre className={cn("overflow-auto whitespace-pre-wrap break-words rounded-sm bg-paper-3 px-2.5 py-2 font-mono text-[11.5px] leading-relaxed text-ink-2", offset >= 0 ? "max-h-72" : "max-h-40")}>{content}</pre>
+      {offset >= 0 && (
+        <p className="mt-1.5 text-[11.5px] text-ink-3">
+          The cause finder asked the agent again {cause.tested} times, each time with one sentence removed. Without the{" "}
+          {cause.guilty.length === 1 ? "sentence" : "sentences"} in red, it no longer called {cause.tool}.
+        </p>
+      )}
     </div>
   );
 }
 
-export default function StepCard({ item, onDecide, busy }) {
+export default function StepCard({ item, onDecide, busy, cause }) {
   const Icon = TOOL_ICON[item.tool] || FileText;
   const flagged = (item.decision?.action || "allow") !== "allow";
-  const [open, setOpen] = useState(flagged);
+  const marked = !!(cause?.stable && cause.guilty?.length);
+  const [open, setOpen] = useState(flagged || marked);
 
   useEffect(() => {
-    if (flagged) setOpen(true);
-  }, [flagged]);
+    if (flagged || marked) setOpen(true);
+  }, [flagged, marked]);
 
   return (
     <Collapsible open={open} onOpenChange={setOpen}>
@@ -125,7 +151,7 @@ export default function StepCard({ item, onDecide, busy }) {
         <div className="flex flex-col gap-3 px-3 pb-3 pl-[34px] pt-1">
           <Args item={item} />
           <Verdict item={item} onDecide={onDecide} busy={busy} />
-          <Result item={item} />
+          <Result item={item} cause={cause} />
         </div>
       </CollapsibleContent>
     </Collapsible>

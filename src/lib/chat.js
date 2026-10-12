@@ -1,6 +1,6 @@
 import { ShieldAlert, ShieldCheck, ShieldQuestion, Hand, CircleCheck, CircleAlert } from "lucide-react";
 
-export const EVENT_TYPES = ["turn", "thinking", "call", "result", "hold", "hold_resolved", "filter", "note", "error", "answer_delta", "turn_done"];
+export const EVENT_TYPES = ["turn", "thinking", "call", "result", "hold", "hold_resolved", "filter", "note", "error", "answer_delta", "cause", "turn_done"];
 
 export const MODE_LABEL = { off: "No defense", keyword: "Keyword filter", riposte: "Riposte" };
 
@@ -87,6 +87,13 @@ export function applyEvent(chat, e) {
       }));
     case "result":
       return turn((t) => ({ ...t, items: patchCall(t.items, e.step, () => ({ result: e })) }));
+    case "cause":
+      return turn((t) => ({
+        ...t,
+        items: patchCall(t.items, e.step, () => ({
+          cause: { tool: e.tool, ticket: e.ticket, body: e.body || "", guilty: e.guilty || [], tested: e.tested || 0, stable: e.stable !== false },
+        })),
+      }));
     case "hold":
       return { ...turn((t) => ({ ...t, items: patchCall(t.items, e.step, () => ({ hold: { id: e.hold_id, status: "pending" } })) })), status: "waiting" };
     case "hold_resolved":

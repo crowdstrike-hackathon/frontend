@@ -199,8 +199,19 @@ export default function FlowMap({ turn }) {
       <div className={cn("border-t border-white/10 px-4 py-3 text-[13px] leading-relaxed", focus ? "text-slate-100" : "text-slate-300")}>
         {info}
       </div>
+      {(graph.cause || graph.finding) && <EmailCause cause={graph.cause} />}
     </div>
   );
+}
+
+// Points to the email itself, where the cause finder's sentence is marked; the email isn't repeated here.
+function EmailCause({ cause }) {
+  let text;
+  if (!cause) text = "Finding the sentence in the email that caused this\u2026";
+  else if (!cause.stable) text = "The agent didn't repeat the action when asked again, so no sentence could be pinned down.";
+  else if (!cause.guilty.length) text = `No single sentence in the email did it on its own: removing any one of the ${cause.tested} still led to ${cause.tool}.`;
+  else text = `The sentence that made the agent call ${cause.tool} is marked red in the email, in the read_ticket step above.`;
+  return <div className="border-t border-white/10 px-4 py-3 text-[12.5px] text-slate-400">{text}</div>;
 }
 
 function Legend({ color, label }) {

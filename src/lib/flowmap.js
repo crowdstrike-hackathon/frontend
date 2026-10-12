@@ -124,7 +124,12 @@ export function buildFlowGraph(turn) {
   }
 
   const srcList = [...sources.values()].sort((a, b) => centre(a) - centre(b) || kindRank(a) - kindRank(b) || a.order - b.order);
-  return { sources: srcList, actions, outcomes: [...outcomes.values()], edges };
+  // The cause finder's result for the first flagged action that has one.
+  const withCause = calls.find((i) => i.cause);
+  const cause = withCause ? { ...withCause.cause, actionId: `a:${withCause.key}` } : null;
+  const finding = !cause && turn.status === "running" && actions.some((a) => ["blocked", "held"].includes(a.status));
+
+  return { sources: srcList, actions, outcomes: [...outcomes.values()], edges, cause, finding };
 }
 
 function kindRank(s) {
@@ -162,6 +167,7 @@ export function describe(graph, id) {
     const names = [...new Set(fed.map((a) => a.tool))].join(", ");
     let text = `${node.label} fed ${fed.length === 1 ? "1 action" : `${fed.length} actions`}: ${names}.`;
     if (node.kind === "untrusted") text += " It's a stranger's email, so anything it decides is treated as untrusted.";
+    if (node.kind === "untrusted" && graph.cause?.stable && graph.cause.guilty.length) text += ` The sentence marked red in the email (the read_ticket step) is what made the agent call ${graph.cause.tool}.`;
     if (stopped.length) text += ` Riposte stopped ${stopped.length === fed.length ? (fed.length === 1 ? "it" : "all of them") : `${stopped.length} of them`}.`;
     return text;
   }
