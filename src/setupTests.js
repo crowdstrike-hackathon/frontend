@@ -22,7 +22,6 @@ if (!window.matchMedia) {
   });
 }
 
-// jsdom has no SVG geometry or canvas; the animated borders and star fields need both.
 if (!window.SVGElement.prototype.getTotalLength) {
   window.SVGElement.prototype.getTotalLength = () => 0;
   window.SVGElement.prototype.getPointAtLength = () => ({ x: 0, y: 0 });

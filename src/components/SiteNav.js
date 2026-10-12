@@ -4,16 +4,13 @@ import { Navbar, NavBody, NavItems, MobileNav, MobileNavHeader, MobileNavMenu, M
 import { LogoMark } from "../ui/Logo";
 import { cn } from "../lib/utils";
 
-// Transparent glass: the tint comes from whatever is behind the bar.
 const GLASS = "border border-white/25 bg-transparent bg-gradient-to-b from-white/[0.10] to-transparent";
 
-// "light" = white text for dark backdrops (the sky hero); "dark" = dark text for pale pages.
 const TONE = {
   light: { text: "text-white", items: "[&_a]:!text-white [&_a>div]:!bg-white/20", note: "text-white/80", primary: "primary" },
   dark: { text: "text-slate-900", items: "[&_a]:!text-slate-800 [&_a>div]:!bg-slate-900/10", note: "text-slate-600", primary: "dark" },
 };
 
-// True while the element with this id is still under the navbar.
 function useOver(id) {
   const [over, setOver] = useState(!!id);
   useEffect(() => {
@@ -33,9 +30,6 @@ function useOver(id) {
   return over;
 }
 
-// links: { name, to?: route, link?: hash }   actions: { label, to?, onClick?, secondary? }
-// lightOver: id of a dark section; the bar uses white text while it sits over that section.
-// light: always use white text (pages that are sky all the way down).
 export default function SiteNav({ links, actions = [], note, lightOver, light: alwaysLight }) {
   const [open, setOpen] = useState(false);
   const nav = useNavigate();

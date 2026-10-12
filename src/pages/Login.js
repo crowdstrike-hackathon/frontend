@@ -47,7 +47,7 @@ export default function Login() {
         >
           <div className="rounded-3xl border border-black/5 bg-white p-7 shadow-lg sm:p-8">
             <h1 className="text-2xl font-semibold tracking-tight text-slate-900">{isLogin ? "Welcome back" : "Create your account"}</h1>
-            <p className="mt-1 text-sm text-slate-500">{isLogin ? "Sign in to open your dashboard." : "Set up an analyst seat to run engagements."}</p>
+            <p className="mt-1 text-sm text-slate-500">{isLogin ? "Sign in to open the console." : "Set up a seat to test the agent firewall."}</p>
 
             <form onSubmit={submit} className="mt-6 space-y-4">
               <AnimatePresence mode="popLayout">

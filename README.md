@@ -1,36 +1,43 @@
-# Sentinel — dashboard (frontend)
+# Riposte (frontend)
 
-React dashboard for the agentic red/blue SOC simulation. Auth, a live "War Room" where the
-adversary AI streams telemetry and the defender AI posts verdicts, human-in-the-loop action
-approval, and a persisted engagement history with charts.
+The console for Riposte, a provenance-based firewall for AI agent tool calls. It is a chat-style
+view of a support agent handling tickets, with every tool call shown alongside the firewall's
+decision and the source of each argument.
+
+## What you can do
+
+- Pick a ticket from the inbox (loaded from the backend's `tickets.json`) or write your own as a customer or an attacker.
+- Switch the defense between **Off**, **Keyword filter** and **Riposte**, and rerun the same ticket to compare.
+- See each tool call with its arguments tagged as trusted, from the ticket, ticket sender, or no source.
+- Approve or deny calls that Riposte holds for a person.
+- See what actually left the sandbox, and review past runs in History.
 
 ## Stack
 
-React 19 · Tailwind CSS · Framer Motion · Aceternity-style UI (aurora, spotlight, glass,
-moving-border, animated beam) · Recharts · react-router · react-hot-toast · lucide icons.
+React 19, Tailwind CSS, shadcn/ui components (`src/components/ui`), Aceternity UI for the landing
+page and the cloud shader, Framer Motion, lucide icons.
 
 ## Run
 
 ```bash
 cd frontend/crowdstrike
 npm install
-npm start           # http://localhost:3000
+npm start
 ```
 
-Set `REACT_APP_API_BASE` (defaults to `http://localhost:8000`, in `.env`). Start the
-backend first (see `app/app/README.md`), register an account, pick a scenario in the War
-Room, and hit **Launch → Auto-run**.
+The app opens on http://localhost:3000 and talks to the backend at `REACT_APP_API_BASE`
+(default `http://localhost:8000`, set in `.env`). Start the backend first, then register an account.
 
 ## Structure
 
 ```
 src/
-  api.js              fetch + token auth + SSE EventSource client
-  context/AuthContext JWT auth state (register / login / me / logout)
-  ui/                 reusable primitives: AuroraBackground, Spotlight, GlassCard,
-                      GlowButton/MovingBorderButton, TextGenerate, DuelBeam
-  components/         Sidebar, ScenarioPicker, EventTimeline, InvestigationFeed,
-                      ApprovalQueue, Scoreboard
-  pages/              Login, Dashboard (War Room), History
-  App.js              router + protected routes + app shell
+  api.js                 fetch client, token storage, EventSource for run streams
+  lib/run.js             folds the run's server-sent events into the chat view
+  pages/Console.js       the chat console
+  pages/History.js       past runs
+  pages/Landing.js       landing page
+  components/chat/       inbox, thread, tool-call cards, composer, side panel
+  components/ui/         shadcn components
+  ui/aceternity/         Aceternity components
 ```

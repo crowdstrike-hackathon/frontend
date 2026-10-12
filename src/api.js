@@ -23,15 +23,17 @@ async function request(path, { method = "GET", body, auth = true } = {}) {
     const t = getToken();
     if (t) headers.Authorization = `Bearer ${t}`;
   }
-  const res = await fetch(`${BASE}${path}`, {
-    method,
-    headers,
-    body: body ? JSON.stringify(body) : undefined,
-  });
+  let res;
+  try {
+    res = await fetch(`${BASE}${path}`, { method, headers, body: body ? JSON.stringify(body) : undefined });
+  } catch {
+    throw new Error(`Cannot reach the Riposte API at ${BASE}`);
+  }
   if (!res.ok) {
     let detail = `${res.status}`;
     try {
-      detail = (await res.json()).detail || detail;
+      const data = await res.json();
+      detail = typeof data.detail === "string" ? data.detail : data.detail?.[0]?.msg || detail;
     } catch {}
     throw new Error(detail);
   }
@@ -45,35 +47,12 @@ export const api = {
   login: (data) => request("/api/auth/login", { method: "POST", body: data, auth: false }),
   me: () => request("/api/auth/me"),
   meta: () => request("/api/meta", { auth: false }),
-  createSession: (scenario_id, opts = {}) =>
-    request("/api/sessions", { method: "POST", body: { scenario_id, ...opts } }),
-  getSession: (id) => request(`/api/sessions/${id}`),
-  step: (id) => request(`/api/sessions/${id}/step`, { method: "POST" }),
-  run: (id) => request(`/api/sessions/${id}/run`, { method: "POST" }),
-  decide: (id, actionId, decision) =>
-    request(`/api/sessions/${id}/actions/${actionId}/${decision}`, { method: "POST" }),
+  tickets: () => request("/api/tickets"),
+  world: () => request("/api/world"),
+  createRun: (body) => request("/api/runs", { method: "POST", body }),
+  getRun: (id) => request(`/api/runs/${id}`),
+  decideHold: (runId, holdId, decision) => request(`/api/runs/${runId}/holds/${holdId}`, { method: "POST", body: { decision } }),
+  cancelRun: (id) => request(`/api/runs/${id}/cancel`, { method: "POST" }),
   history: () => request("/api/history"),
-  stats: () => request("/api/stats"),
-  ingest: (logs) => request("/api/ingest", { method: "POST", body: { logs } }),
-  stream: (id) => new EventSource(`${BASE}/api/sessions/${id}/stream?token=${encodeURIComponent(getToken() || "")}`),
-
-  agentTickets: () => request("/api/agent/tickets"),
-  createAgentRun: (body) => request("/api/agent/runs", { method: "POST", body }),
-  startAgentRun: (id) => request(`/api/agent/runs/${id}/start`, { method: "POST" }),
-  getAgentRun: (id) => request(`/api/agent/runs/${id}`),
-  agentStream: (id) => new EventSource(`${BASE}/api/agent/runs/${id}/stream?token=${encodeURIComponent(getToken() || "")}`),
-  agentHistory: () => request("/api/agent/history"),
-
-  createRedteam: (n = 0) => request("/api/agent/redteam", { method: "POST", body: { n } }),
-  startRedteam: (id) => request(`/api/agent/redteam/${id}/start`, { method: "POST" }),
-  redteamStream: (id) => new EventSource(`${BASE}/api/agent/redteam/${id}/stream?token=${encodeURIComponent(getToken() || "")}`),
-
-  getConnection: () => request("/api/settings/connection"),
-  putConnection: (body) => request("/api/settings/connection", { method: "PUT", body }),
-  testConnection: (body) => request("/api/settings/connection/test", { method: "POST", body }),
-
-  scanCode: (body = { use_sample: true }) => request("/api/agent/scan", { method: "POST", body }),
-  consoleState: () => request("/api/console/state"),
-  consoleMessage: (text) => request("/api/console/message", { method: "POST", body: { text } }),
-  consoleStream: () => new EventSource(`${BASE}/api/console/stream?token=${encodeURIComponent(getToken() || "")}`),
+  runStream: (id) => new EventSource(`${BASE}/api/runs/${id}/stream?token=${encodeURIComponent(getToken() || "")}`),
 };

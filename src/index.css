@@ -5,6 +5,28 @@
 @tailwind utilities;
 
 @layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 222 47% 11%;
+    --card: 0 0% 100%;
+    --card-foreground: 222 47% 11%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222 47% 11%;
+    --primary: 201 96% 32%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 204 94% 94%;
+    --secondary-foreground: 201 90% 24%;
+    --muted: 210 40% 96%;
+    --muted-foreground: 215 16% 42%;
+    --accent: 204 94% 94%;
+    --accent-foreground: 201 90% 24%;
+    --destructive: 347 77% 50%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 214 32% 91%;
+    --input: 214 32% 88%;
+    --ring: 199 89% 48%;
+    --radius: 1rem;
+  }
   html,
   body,
   #root {
@@ -13,7 +35,6 @@
   html {
     scroll-behavior: smooth;
   }
-  /* No rubber-band overscroll: the page must not pull down past the hero. */
   html,
   body {
     overscroll-behavior: none;
@@ -21,22 +42,5 @@
   body {
     @apply bg-white font-sans text-slate-900 antialiased;
     margin: 0;
-  }
-}
-
-@layer utilities {
-  .app-shell {
-    color-scheme: dark;
-  }
-  .scrollbar-thin::-webkit-scrollbar {
-    width: 7px;
-    height: 7px;
-  }
-  .scrollbar-thin::-webkit-scrollbar-thumb {
-    background: rgba(148, 163, 184, 0.28);
-    border-radius: 6px;
-  }
-  .scrollbar-thin::-webkit-scrollbar-track {
-    background: transparent;
   }
 }

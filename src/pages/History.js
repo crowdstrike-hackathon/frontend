@@ -1,164 +1,74 @@
 import React, { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
-import { motion } from "framer-motion";
-import { Bar, BarChart, ResponsiveContainer, Tooltip, XAxis } from "recharts";
-import { BarChart3, History as HistoryIcon, Crosshair, ShieldCheck, ShieldX, CheckCircle2 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
+import { ArrowRight, Loader2 } from "lucide-react";
 import { api } from "../api";
-import { SURFACE, Panel, Empty, Chip, Page, PageHeader } from "../components/Sky";
-import { NumberTicker } from "../ui/aceternity";
+import { CloudShader } from "../ui/aceternity";
+import AppBar from "../components/AppBar";
+import { Badge } from "../components/ui/badge";
+import { ScrollArea } from "../components/ui/scroll-area";
+import { MODE_LABEL, OUTCOME, TONE } from "../lib/run";
 import { cn } from "../lib/utils";
 
+function when(iso) {
+  if (!iso) return "";
+  return new Date(iso).toLocaleString([], { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" });
+}
+
 export default function History() {
-  const [runs, setRuns] = useState([]);
-  const [stats, setStats] = useState(null);
-  const [agentRuns, setAgentRuns] = useState([]);
+  const nav = useNavigate();
+  const [rows, setRows] = useState(null);
 
   useEffect(() => {
-    Promise.all([api.history(), api.stats()])
-      .then(([h, s]) => { setRuns(h); setStats(s); })
-      .catch((e) => toast.error(e.message));
-    api.agentHistory().then(setAgentRuns).catch(() => {});
+    api.history().then(setRows).catch((e) => {
+      toast.error(e.message);
+      setRows([]);
+    });
   }, []);
 
-  const chartData = [...runs].reverse().map((r, i) => ({ name: `#${i + 1}`, blue: r.blue_points, red: r.red_points }));
-
-  const KPIS = [
-    { label: "Simulations run", value: stats?.total_runs ?? 0, suffix: "", decimals: 0 },
-    { label: "Detection rate", value: stats ? Math.round(stats.detection_rate * 100) : 0, suffix: "%", decimals: 0 },
-    { label: "Average blue score", value: stats?.avg_blue_points ?? 0, suffix: "", decimals: 1 },
-    { label: "Avg. turn of detection", value: stats?.avg_detection_turn ?? 0, suffix: "", decimals: 2 },
-  ];
-
   return (
-    <Page>
-      <PageHeader title="History" subtitle="Every attack replay and simulation your team has run." />
-      <dl className="grid grid-cols-2 gap-5 lg:grid-cols-4">
-        {KPIS.map((k) => (
-          <div key={k.label} className={cn(SURFACE, "p-5")}>
-            <dt className="text-xs font-medium text-slate-400">{k.label}</dt>
-            <dd className="mt-2 text-3xl font-semibold tabular-nums tracking-tight text-white">
-              <NumberTicker value={k.value} decimals={k.decimals} />
-              <span className="text-lg text-slate-400">{k.suffix}</span>
-            </dd>
+    <div className="relative flex h-screen flex-col overflow-hidden">
+      <CloudShader className="absolute inset-0" skyTopColor="#245a9c" skyBottomColor="#7fb2de" count={4} speed={0.6} />
+      <div className="pointer-events-none absolute inset-x-0 top-0 h-48 bg-gradient-to-b from-[#0b2a55]/55 to-transparent" />
+      <div className="relative z-10 flex min-h-0 flex-1 flex-col gap-3 p-3 md:p-4">
+        <AppBar />
+        <main className="mx-auto flex min-h-0 w-full max-w-4xl flex-1 flex-col overflow-hidden rounded-3xl border border-white/60 bg-white/90 shadow-xl backdrop-blur-xl">
+          <div className="border-b border-slate-200/80 px-5 py-4">
+            <h1 className="text-lg font-semibold tracking-tight text-slate-900">Run history</h1>
+            <p className="mt-0.5 text-[13px] text-slate-500">Every ticket Nova has handled, with the defense that was on and what happened.</p>
           </div>
-        ))}
-      </dl>
-
-      {chartData.length > 0 && (
-        <Panel
-          className="shrink-0"
-          icon={<BarChart3 className="h-4 w-4 text-slate-500" />}
-          title="Score by run"
-          right={
-            <>
-              <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-sky-400" /> blue</span>
-              <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-rose-400" /> red</span>
-            </>
-          }
-        >
-          <div className="h-48 px-4 pb-4">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={chartData} margin={{ top: 4, right: 0, left: 0, bottom: 0 }} barGap={3}>
-                <XAxis dataKey="name" stroke="#64748b" fontSize={11} tickLine={false} axisLine={false} />
-                <Tooltip cursor={{ fill: "rgba(255,255,255,0.04)" }} contentStyle={{ background: "#111722", border: "1px solid rgba(255,255,255,0.1)", color: "#e2e8f0", borderRadius: 12, fontSize: 12 }} />
-                <Bar dataKey="blue" radius={[6, 6, 0, 0]} fill="#38bdf8" maxBarSize={28} />
-                <Bar dataKey="red" radius={[6, 6, 0, 0]} fill="#fb7185" maxBarSize={28} />
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
-        </Panel>
-      )}
-
-      <Panel className="shrink-0" icon={<Crosshair className="h-4 w-4 text-slate-500" />} title="Attack replays" right={<span className="tabular-nums">{agentRuns.length} total</span>}>
-        {agentRuns.length === 0 ? (
-          <Empty icon={Crosshair}>
-            No agent runs yet. <Link to="/live-fire" className="font-semibold text-sky-300 hover:underline">Run a ticket through Nova</Link>.
-          </Empty>
-        ) : (
-          <ul className="pb-2">
-            {agentRuns.map((r, i) => (
-              <motion.li
-                key={r.id}
-                initial={{ opacity: 0, y: 8 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: Math.min(i, 12) * 0.03 }}
-                className="flex flex-wrap items-center gap-x-4 gap-y-2 border-t border-white/[0.06] px-4 py-3.5"
-              >
-                <div className="min-w-0 flex-1">
-                  <div className="truncate text-sm font-semibold text-slate-100">{r.subject || r.ticket_id}</div>
-                  <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-[11px] text-slate-400">
-                    <Chip className={cn("py-0.5", r.defense ? "bg-emerald-500/15 text-emerald-300" : "bg-white/[0.06] text-slate-400")}>
-                      {r.defense ? <ShieldCheck className="h-3 w-3" /> : <ShieldX className="h-3 w-3" />} defense {r.defense ? "on" : "off"}
-                    </Chip>
-                    <span>{r.mode} models</span>
-                    <span>· {r.step_count} steps</span>
-                    {r.created_at && <span>· {new Date(r.created_at).toLocaleString()}</span>}
-                  </div>
-                </div>
-                <OutcomeChip outcome={r.outcome} />
-              </motion.li>
-            ))}
-          </ul>
-        )}
-      </Panel>
-
-      <Panel className="shrink-0" icon={<HistoryIcon className="h-4 w-4 text-slate-500" />} title="Simulations" right={<span className="tabular-nums">{runs.length} total</span>}>
-        {runs.length === 0 ? (
-          <Empty icon={HistoryIcon}>
-            No runs yet. <Link to="/dashboard" className="font-semibold text-sky-300 hover:underline">Launch your first engagement</Link>.
-          </Empty>
-        ) : (
-          <ul className="pb-2">
-            {runs.map((r, i) => (
-              <motion.li
-                key={r.id}
-                initial={{ opacity: 0, y: 8 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: Math.min(i, 12) * 0.03 }}
-                className="flex flex-wrap items-center gap-x-4 gap-y-2 border-t border-white/[0.06] px-4 py-3.5"
-              >
-                <div className="min-w-0 flex-1">
-                  <div className="truncate text-sm font-semibold text-slate-100">{r.scenario_name}</div>
-                  <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-[11px] text-slate-400">
-                    <Chip className={cn("py-0.5", r.detected ? "bg-emerald-500/15 text-emerald-300" : "bg-rose-500/10 text-rose-400")}>
-                      {r.detected ? `detected on turn ${r.detection_turn}` : "not detected"}
-                    </Chip>
-                    <span>{r.mode} models</span>
-                    <span>· {r.status}</span>
-                    <span>· {r.turn}/{r.max_turns} turns</span>
-                    {r.created_at && <span>· {new Date(r.created_at).toLocaleString()}</span>}
-                  </div>
-                </div>
-                <div className="flex items-baseline gap-5 tabular-nums">
-                  <Metric label="Blue" value={r.blue_points} color="text-sky-400" />
-                  <Metric label="Red" value={r.red_points} color="text-rose-400" />
-                </div>
-              </motion.li>
-            ))}
-          </ul>
-        )}
-      </Panel>
-    </Page>
-  );
-}
-
-function OutcomeChip({ outcome }) {
-  const MAP = {
-    blocked: { cls: "bg-emerald-500/15 text-emerald-300", Icon: ShieldCheck, label: "blocked" },
-    exfiltrated: { cls: "bg-rose-500/15 text-rose-300", Icon: ShieldX, label: "exfiltrated" },
-    safe: { cls: "bg-sky-500/10 text-sky-300", Icon: CheckCircle2, label: "safe" },
-  };
-  const v = MAP[outcome] || MAP.safe;
-  const Icon = v.Icon;
-  return <Chip className={cn("py-1", v.cls)}><Icon className="h-3 w-3" /> {v.label}</Chip>;
-}
-
-function Metric({ label, value, color }) {
-  return (
-    <div className="text-right">
-      <div className="text-[10px] uppercase tracking-wide text-slate-400">{label}</div>
-      <div className={`text-xl font-semibold ${color}`}>{value}</div>
+          <ScrollArea className="min-h-0 flex-1">
+            {rows === null && (
+              <div className="flex justify-center py-16"><Loader2 className="h-5 w-5 animate-spin text-sky-700" /></div>
+            )}
+            {rows?.length === 0 && <p className="py-16 text-center text-sm text-slate-500">No runs yet. Send Nova a ticket from the console.</p>}
+            <ul className="divide-y divide-slate-100">
+              {(rows || []).map((r) => {
+                const meta = OUTCOME[r.outcome] || OUTCOME.error;
+                const tone = TONE[meta.tone];
+                return (
+                  <li key={r.id}>
+                    <button onClick={() => nav(`/console?run=${r.id}`)} className="group flex w-full items-center gap-3 px-5 py-3 text-left transition hover:bg-sky-50">
+                      <span className={cn("h-2.5 w-2.5 shrink-0 rounded-full", tone.dot)} />
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center gap-2">
+                          <span className="font-mono text-[11px] text-slate-400">{r.ticket_id}</span>
+                          <span className="truncate text-[13.5px] font-semibold text-slate-900">{r.subject}</span>
+                        </div>
+                        <div className="mt-0.5 truncate text-[12px] text-slate-500">{r.summary}</div>
+                      </div>
+                      <Badge variant="outline" className="hidden sm:inline-flex">{MODE_LABEL[r.mode] || r.mode}</Badge>
+                      <span className={cn("hidden w-32 text-right text-[12.5px] font-semibold md:block", tone.text)}>{meta.label}</span>
+                      <span className="hidden w-28 text-right text-[11.5px] text-slate-400 md:block">{when(r.created_at)}</span>
+                      <ArrowRight className="h-4 w-4 text-slate-300 transition group-hover:translate-x-0.5 group-hover:text-sky-700" />
+                    </button>
+                  </li>
+                );
+              })}
+            </ul>
+          </ScrollArea>
+        </main>
+      </div>
     </div>
   );
 }
