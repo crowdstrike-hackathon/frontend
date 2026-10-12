@@ -1,6 +1,7 @@
 import React from "react";
 import { Link, NavLink } from "react-router-dom";
 import { History, LogOut, MessageSquare, SquarePen } from "lucide-react";
+import { LogoMark } from "../ui/Logo";
 import { useAuth } from "../context/AuthContext";
 import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
 import { cn } from "../lib/utils";
@@ -19,16 +20,16 @@ export default function AppShell({ onNew, newDisabled, sidebar, header, children
     <div className="flex h-screen overflow-hidden bg-paper text-ink">
       <aside className="hidden w-[264px] shrink-0 flex-col border-r border-line bg-paper-2 lg:flex">
         <div className="flex h-12 shrink-0 items-center px-4">
-          <Link to="/" className="font-serif text-[19px] font-semibold tracking-tight text-ink">Riposte</Link>
+          <Link to="/" className="flex items-center gap-2 text-[16px] font-semibold tracking-tight text-ink"><LogoMark size={24} /> Riposte</Link>
         </div>
         <nav className="flex shrink-0 flex-col gap-px px-2 pb-2">
           {onNew ? (
             <button onClick={onNew} disabled={newDisabled} className={cn(ROW, "text-left disabled:opacity-40")}>
-              <SquarePen className="text-clay" /> New chat
+              <SquarePen className="text-brand" /> New chat
             </button>
           ) : (
             <Link to="/console" className={ROW}>
-              <SquarePen className="text-clay" /> New chat
+              <SquarePen className="text-brand" /> New chat
             </Link>
           )}
           {LINKS.map(({ to, label, icon: Icon }) => (
@@ -53,7 +54,7 @@ export default function AppShell({ onNew, newDisabled, sidebar, header, children
       </aside>
       <div className="flex min-w-0 flex-1 flex-col">
         <header className="flex h-12 shrink-0 items-center gap-2 border-b border-line px-3 md:px-4">
-          <Link to="/" className="mr-1 font-serif text-[18px] font-semibold tracking-tight lg:hidden">Riposte</Link>
+          <Link to="/" aria-label="Riposte" className="mr-1 lg:hidden"><LogoMark size={26} /></Link>
           <nav className="flex items-center gap-0.5 lg:hidden">
             {LINKS.map(({ to, label, icon: Icon }) => (
               <NavLink key={to} to={to} aria-label={label} className={({ isActive }) => cn("grid h-8 w-8 place-items-center rounded-md text-ink-3 hover:bg-paper-3", isActive && "bg-paper-3 text-ink")}>

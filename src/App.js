@@ -13,7 +13,7 @@ function Protected({ children }) {
   if (loading)
     return (
       <div className="flex h-screen items-center justify-center bg-paper">
-        <Loader2 className="h-6 w-6 animate-spin text-clay" />
+        <Loader2 className="h-6 w-6 animate-spin text-brand" />
       </div>
     );
   if (!user) return <Navigate to="/login" replace />;

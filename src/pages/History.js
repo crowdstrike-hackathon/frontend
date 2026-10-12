@@ -28,10 +28,10 @@ export default function History() {
     <AppShell header={<h1 className="text-[13.5px] font-medium text-ink">History</h1>}>
       <ScrollArea className="min-h-0 flex-1">
         <div className="mx-auto w-full max-w-4xl px-4 py-8">
-          <h2 className="font-serif text-[28px] leading-tight tracking-tight text-ink">Run history</h2>
+          <h2 className="text-[26px] font-semibold leading-tight tracking-tight text-ink">Run history</h2>
           <p className="mt-1 text-[14px] text-ink-3">Every ticket Nova has handled, the defense that was on, and what happened.</p>
           {rows === null && (
-            <div className="flex justify-center py-16"><Loader2 className="h-5 w-5 animate-spin text-clay" /></div>
+            <div className="flex justify-center py-16"><Loader2 className="h-5 w-5 animate-spin text-brand" /></div>
           )}
           {rows?.length === 0 && <p className="py-16 text-[14px] text-ink-3">No runs yet. Send Nova a ticket from the console.</p>}
           {rows?.length > 0 && (

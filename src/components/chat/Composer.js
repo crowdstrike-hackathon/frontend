@@ -38,7 +38,7 @@ export default function Composer({ customers, busy, onSend, onStop }) {
   };
 
   return (
-    <div className="rounded-2xl border border-line-strong bg-white shadow-[0_2px_8px_rgba(20,20,19,0.05)] transition-colors focus-within:border-ink-4">
+    <div className="rounded-2xl border border-line-strong bg-white shadow-[0_2px_8px_rgba(11,42,85,0.06)] transition-colors focus-within:border-ink-4">
       <textarea
         value={body}
         onChange={(e) => setBody(e.target.value)}
@@ -76,7 +76,7 @@ export default function Composer({ customers, busy, onSend, onStop }) {
             <Square className="h-3 w-3 fill-current" />
           </button>
         ) : (
-          <button onClick={send} disabled={!ready} aria-label="Send ticket" className="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-clay text-white transition-colors hover:bg-clay-dark disabled:opacity-40">
+          <button onClick={send} disabled={!ready} aria-label="Send ticket" className="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-brand text-white transition-colors hover:bg-brand-dark disabled:opacity-40">
             <ArrowUp className="h-4 w-4" />
           </button>
         )}

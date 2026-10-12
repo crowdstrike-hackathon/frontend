@@ -9,14 +9,14 @@ import { cn } from "../../lib/utils";
 function TicketBubble({ ticket }) {
   return (
     <div className="flex justify-end">
-      <div className="max-w-[85%] rounded-2xl bg-paper-3 px-4 py-3">
-        <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 font-mono text-[11px] text-ink-3">
+      <div className="max-w-[85%] rounded-2xl bg-brand px-4 py-3">
+        <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 font-mono text-[11px] text-sky-100">
           <span>{ticket.id}</span>
           <span>{ticket.from}</span>
           <span>{ticket.customer_id || "no account"}</span>
         </div>
-        <div className="mt-1.5 text-[15px] font-semibold text-ink">{ticket.subject}</div>
-        <p className="mt-1 whitespace-pre-wrap break-words text-[15px] leading-relaxed text-ink-2">{ticket.body}</p>
+        <div className="mt-1.5 text-[15px] font-semibold text-white">{ticket.subject}</div>
+        <p className="mt-1 whitespace-pre-wrap break-words text-[15px] leading-relaxed text-sky-50">{ticket.body}</p>
       </div>
     </div>
   );
@@ -93,13 +93,13 @@ export default function RunThread({ run, onDecide, deciding, onRerun, canRerun }
         })}
         {live && run.thinking && (
           <div className="flex items-center gap-2 py-1 text-[13px] text-ink-3">
-            <Loader2 className="h-3.5 w-3.5 animate-spin text-clay" /> Choosing the next tool call
+            <Loader2 className="h-3.5 w-3.5 animate-spin text-brand" /> Choosing the next tool call
           </div>
         )}
         {run.finalReply && (
           <div className="pt-2">
             <div className="text-[12px] text-ink-3">Reply sent to {run.ticket.from}</div>
-            <p className="mt-1 whitespace-pre-wrap break-words font-serif text-[16px] leading-[1.65] text-ink">{run.finalReply}</p>
+            <p className="mt-1 whitespace-pre-wrap break-words text-[15.5px] leading-[1.65] text-ink">{run.finalReply}</p>
           </div>
         )}
         {!live && run.outcome && <Outcome run={run} onRerun={onRerun} canRerun={canRerun} />}

@@ -53,7 +53,7 @@ function ModelStatus({ agent }) {
 function EmptyState({ tickets, disabled, onPick }) {
   return (
     <div className="mx-auto w-full max-w-2xl px-4 pb-6 pt-[14vh]">
-      <h1 className="font-serif text-[32px] leading-tight tracking-tight text-ink">Send Nova a ticket</h1>
+      <h1 className="text-[30px] font-semibold leading-tight tracking-tight text-ink">Send Nova a ticket</h1>
       <p className="mt-2 max-w-xl text-[15px] leading-relaxed text-ink-3">
         Nova is a support agent with real tools. It reads customer records, fetches API keys, issues refunds and sends email. Run a ticket, then switch the defense and run it again.
       </p>
