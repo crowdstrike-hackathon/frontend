@@ -83,7 +83,7 @@ export function applyEvent(chat, e) {
       return turn((t) => ({
         ...t,
         thinking: false,
-        items: [...t.items, { kind: "call", key: `c${e.seq}`, step: e.step, tool: e.tool, args: e.args, thought: e.thought, decision: e.decision, checked: e.checked }],
+        items: [...t.items, { kind: "call", key: `c${e.seq}`, step: e.step, tool: e.tool, args: e.args, thought: e.thought, decision: e.decision, checked: e.checked, flows: e.flows || [], to: e.to || null }],
       }));
     case "result":
       return turn((t) => ({ ...t, items: patchCall(t.items, e.step, () => ({ result: e })) }));
