@@ -61,12 +61,11 @@ function NoteRow({ item }) {
   );
 }
 
-function Outcome({ turn, mode, onRerun }) {
+function Outcome({ turn, mode }) {
   const meta = OUTCOME[turn.outcome] || OUTCOME.error;
   const tone = TONE[meta.tone];
   const Icon = meta.icon;
   const note = verdictNote(turn, mode);
-  const others = ["off", "keyword", "riposte"].filter((m) => m !== mode);
   return (
     <div className="flex flex-col gap-1.5 pt-0.5 text-[13px] leading-relaxed">
       <p className="flex items-start gap-2 text-ink-2">
@@ -75,27 +74,14 @@ function Outcome({ turn, mode, onRerun }) {
           <span className={cn("font-semibold", tone.text)}>{meta.label}.</span> {turn.summary}{note ? ` ${note}` : ""}
         </span>
       </p>
-      {onRerun && (
-        <p className="flex flex-wrap items-center gap-x-1 pl-6 text-[12.5px] text-ink-3">
-          Compare with
-          {others.map((m, i) => (
-            <React.Fragment key={m}>
-              {i > 0 && <span>or</span>}
-              <button onClick={() => onRerun(turn.message, m)} className="rounded-sm px-1 font-medium text-ink underline decoration-line-strong underline-offset-2 transition-colors hover:decoration-ink">
-                {MODE_LABEL[m]}
-              </button>
-            </React.Fragment>
-          ))}
-        </p>
-      )}
     </div>
   );
 }
 
-function Turn({ turn, chat, onDecide, deciding, onRerun }) {
+function Turn({ turn, chat, onDecide, deciding }) {
   const done = turn.status !== "running";
   const thinking = !done && turn.thinking;
-  const showOutcome = done && turn.outcome && (turn.acted || turn.outcome === "error" || turn.outcome === "cancelled");
+  const showOutcome = done && turn.outcome && (turn.acted || ["error", "cancelled", "interrupted"].includes(turn.outcome));
   return (
     <>
       <Message align="end">
@@ -134,23 +120,21 @@ function Turn({ turn, chat, onDecide, deciding, onRerun }) {
               <BubbleContent className="max-w-[68ch] whitespace-pre-wrap text-[14.5px] leading-relaxed text-ink">{turn.answer}</BubbleContent>
             </Bubble>
           )}
-          {showOutcome && <Outcome turn={turn} mode={chat.mode} onRerun={onRerun} />}
+          {showOutcome && <Outcome turn={turn} mode={chat.mode} />}
         </MessageContent>
       </Message>
     </>
   );
 }
 
-export default function ChatThread({ chat, onDecide, deciding, onRerun }) {
-  const last = chat.turns.length - 1;
-  const idle = chat.status === "idle";
+export default function ChatThread({ chat, onDecide, deciding }) {
   return (
     <div className="flex flex-col gap-5">
       <Marker variant="separator" className="text-[11.5px]">
         <MarkerContent>{MODE_LABEL[chat.mode]} · <span className="font-mono">{chat.model}</span></MarkerContent>
       </Marker>
-      {chat.turns.map((turn, i) => (
-        <Turn key={turn.index} turn={turn} chat={chat} onDecide={onDecide} deciding={deciding} onRerun={idle && i === last ? onRerun : null} />
+      {chat.turns.map((turn) => (
+        <Turn key={turn.index} turn={turn} chat={chat} onDecide={onDecide} deciding={deciding} />
       ))}
     </div>
   );

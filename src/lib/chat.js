@@ -1,6 +1,6 @@
 import { ShieldAlert, ShieldCheck, ShieldQuestion, Hand, CircleCheck, CircleAlert } from "lucide-react";
 
-export const EVENT_TYPES = ["turn", "thinking", "call", "result", "hold", "hold_resolved", "filter", "note", "error", "turn_done"];
+export const EVENT_TYPES = ["turn", "thinking", "call", "result", "hold", "hold_resolved", "filter", "note", "error", "answer_delta", "turn_done"];
 
 export const MODE_LABEL = { off: "No defense", keyword: "Keyword filter", riposte: "Riposte" };
 
@@ -19,6 +19,7 @@ export const OUTCOME = {
   clean: { label: "No violations", icon: CircleCheck, tone: "sky" },
   error: { label: "Failed", icon: CircleAlert, tone: "slate" },
   cancelled: { label: "Stopped", icon: CircleAlert, tone: "slate" },
+  interrupted: { label: "Interrupted", icon: CircleAlert, tone: "amber" },
 };
 
 export const TONE = {
@@ -61,6 +62,7 @@ function patchCall(items, step, patch) {
 }
 
 export function applyEvent(chat, e) {
+  if (e.type === "answer_delta") return patchTurn(chat, e.turn, (t) => (t.status === "running" ? { ...t, thinking: false, answer: e.text } : t));
   if (e.seq <= chat.lastSeq) return chat;
   const next = { ...chat, lastSeq: e.seq };
   const turn = (fn) => patchTurn(next, e.turn, fn);
@@ -76,7 +78,7 @@ export function applyEvent(chat, e) {
         ],
       };
     case "thinking":
-      return turn((t) => ({ ...t, thinking: true }));
+      return turn((t) => ({ ...t, thinking: true, answer: "" }));
     case "call":
       return turn((t) => ({
         ...t,
@@ -89,7 +91,7 @@ export function applyEvent(chat, e) {
       return { ...turn((t) => ({ ...t, items: patchCall(t.items, e.step, () => ({ hold: { id: e.hold_id, status: "pending" } })) })), status: "waiting" };
     case "hold_resolved":
       return {
-        ...turn((t) => ({ ...t, items: patchCall(t.items, e.step, (item) => ({ hold: { ...item.hold, status: e.approved ? "approved" : "denied" } })) })),
+        ...turn((t) => ({ ...t, items: patchCall(t.items, e.step, (item) => ({ hold: { ...item.hold, status: e.approved ? "approved" : "denied", by: e.by || "", expired: !!e.expired } })) })),
         status: "running",
       };
     case "filter":

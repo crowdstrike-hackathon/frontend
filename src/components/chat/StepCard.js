@@ -24,7 +24,7 @@ function DecisionBadge({ item }) {
   if (action === "hold") {
     const status = item.hold?.status;
     if (status === "approved") return <Badge variant="allow"><Check /> Approved</Badge>;
-    if (status === "denied") return <Badge variant="block"><X /> Denied</Badge>;
+    if (status === "denied") return <Badge variant="block"><X /> {item.hold.expired ? "Timed out" : "Denied"}</Badge>;
     return <Badge variant="hold"><Hand /> Needs approval</Badge>;
   }
   if (!item.checked) return <Badge variant="muted">not checked</Badge>;

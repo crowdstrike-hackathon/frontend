@@ -1,4 +1,4 @@
-const BASE = process.env.REACT_APP_API_BASE || "http://localhost:8000";
+const BASE = process.env.REACT_APP_API_BASE ?? "http://localhost:8000";
 
 const TOKEN_KEY = "riposte_token";
 
@@ -17,8 +17,8 @@ export function setToken(token) {
   } catch {}
 }
 
-async function request(path, { method = "GET", body, auth = true } = {}) {
-  const headers = { "Content-Type": "application/json" };
+async function request(path, { method = "GET", body, auth = true, extraHeaders = {} } = {}) {
+  const headers = { "Content-Type": "application/json", ...extraHeaders };
   if (auth) {
     const t = getToken();
     if (t) headers.Authorization = `Bearer ${t}`;
@@ -49,11 +49,8 @@ export const api = {
   meta: () => request("/api/meta", { auth: false }),
   tickets: () => request("/api/tickets"),
   addTicket: (body) => request("/api/tickets", { method: "POST", body }),
-  redteamSettings: () => request("/api/settings/redteam"),
-  saveRedteamSettings: (body) => request("/api/settings/redteam", { method: "PUT", body }),
-  startRedteam: (body) => request("/api/redteam", { method: "POST", body }),
-  getRedteam: (id) => request(`/api/redteam/${id}`),
-  cancelRedteam: (id) => request(`/api/redteam/${id}/cancel`, { method: "POST" }),
+  inbound: (body) => request("/inbound", { method: "POST", body, auth: false }),
+  previewTicket: (id, fresh = false) => request(`/api/tickets/${encodeURIComponent(id)}/preview${fresh ? "?fresh=true" : ""}`, { method: "POST" }),
   world: () => request("/api/world"),
   createChat: (body) => request("/api/chats", { method: "POST", body }),
   sendMessage: (id, message) => request(`/api/chats/${id}/messages`, { method: "POST", body: { message } }),

@@ -5,6 +5,7 @@ import { Filter, ShieldCheck, ShieldOff } from "lucide-react";
 import { api } from "../api";
 import AppShell from "../components/AppShell";
 import Composer from "../components/chat/Composer";
+import MailView from "../components/chat/MailView";
 import Recents from "../components/chat/Recents";
 import ChatThread from "../components/chat/Thread";
 import { ScrollArea } from "../components/ui/scroll-area";
@@ -50,37 +51,16 @@ function ModelStatus({ agent }) {
   );
 }
 
-function EmptyState({ tickets, file, disabled, onPick }) {
+function EmptyState() {
   return (
-    <div className="mx-auto w-full max-w-2xl px-4 pb-6 pt-[10vh]">
+    <div className="mx-auto w-full max-w-2xl px-4 pb-6 pt-[8vh]">
       <h1 className="text-[30px] font-semibold leading-tight tracking-tight text-ink">Northwind support desk</h1>
       <p className="mt-2 max-w-xl text-[15px] leading-relaxed text-ink-3">
         Northwind is a made-up API company. Nova is its AI support agent, and it can read tickets, fetch customers' API keys, issue refunds and send email. Riposte is the firewall between Nova and those tools.
       </p>
       <p className="mt-2 max-w-xl text-[15px] leading-relaxed text-ink-3">
-        You work the desk. Chat with Nova, or type @ to hand it a ticket.
+        Open Mail to see what Nova wants to do with each email and what Riposte would allow, then hand it to Nova. Or chat with Nova here and type @ to bring in a ticket.
       </p>
-      <div className="mt-7 flex items-baseline gap-2 pb-2 text-[12px] text-ink-3">
-        <span className="font-medium">Inbox</span>
-        <span>Emails from Northwind's customers. Some were written by an attacker.</span>
-        <span className="ml-auto hidden font-mono text-[10.5px] text-ink-4 sm:block">{file?.path}</span>
-      </div>
-      {file?.errors?.length > 0 && (
-        <p className="mb-2 rounded-md border border-amber-300 bg-amber-50 px-2.5 py-1.5 text-[12px] leading-snug text-amber-800">{file.errors[0]}</p>
-      )}
-      {tickets.length === 0 && <p className="border-y border-line py-4 text-[13px] text-ink-3">No tickets found. Add a tickets.json file next to the backend and reload.</p>}
-      <ul className="divide-y divide-line border-y border-line empty:hidden">
-        {tickets.slice(0, 8).map((t) => (
-          <li key={t.id}>
-            <button disabled={disabled} onClick={() => onPick(t)} className="group flex w-full items-center gap-3 px-1 py-2.5 text-left transition-colors hover:bg-paper-3 disabled:opacity-50">
-              <span className="w-16 shrink-0 font-mono text-[11.5px] text-ink-4">{t.id}</span>
-              <span className="min-w-0 flex-1 truncate text-[14px] text-ink">{t.title || t.subject}</span>
-              <span className="hidden truncate text-[12.5px] text-ink-3 group-hover:hidden sm:block">{t.from}</span>
-              <span className="hidden shrink-0 text-[12.5px] font-medium text-ink sm:group-hover:block">Ask Nova to handle it</span>
-            </button>
-          </li>
-        ))}
-      </ul>
     </div>
   );
 }
@@ -89,13 +69,14 @@ export default function Console() {
   const [params, setParams] = useSearchParams();
   const [meta, setMeta] = useState(null);
   const [tickets, setTickets] = useState([]);
-  const [file, setFile] = useState(null);
   const [world, setWorld] = useState(null);
   const { rows: history, reload: loadHistory, rename: renameChat, archive, remove } = useChatHistory();
   const [mode, setModeState] = useState(savedMode);
   const [chat, setChat] = useState(null);
   const [starting, setStarting] = useState(false);
   const [deciding, setDeciding] = useState(false);
+  const [view, setView] = useState("mail");
+  const [hidden, setHidden] = useState(() => new Set());
   const stream = useRef(null);
   const viewport = useRef(null);
 
@@ -112,7 +93,6 @@ export default function Console() {
   const loadTickets = useCallback(() => {
     api.tickets().then((d) => {
       setTickets(d.tickets);
-      setFile(d.file);
     }).catch((e) => toast.error(e.message));
   }, []);
 
@@ -121,6 +101,30 @@ export default function Console() {
     api.world().then(setWorld).catch(() => {});
     loadTickets();
   }, [loadTickets]);
+
+  const seenInbound = useRef(null);
+  useEffect(() => {
+    const ids = tickets.filter((t) => t.kind === "inbound").map((t) => t.id);
+    if (seenInbound.current) {
+      tickets
+        .filter((t) => t.kind === "inbound" && !seenInbound.current.has(t.id))
+        .forEach((t) => toast((tt) => (
+          <button className="text-left" onClick={() => { setView("mail"); toast.dismiss(tt.id); }}>
+            New email from {t.from}. <span className="font-medium underline">Open Mail</span>
+          </button>
+        ), { icon: "✉️" }));
+    }
+    seenInbound.current = new Set(ids);
+  }, [tickets]);
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      api.tickets().then((d) => {
+        setTickets((prev) => (prev.length === d.tickets.length && prev.every((t, i) => t.id === d.tickets[i].id) ? prev : d.tickets));
+      }).catch(() => {});
+    }, 4000);
+    return () => clearInterval(timer);
+  }, []);
 
   const hangUp = useCallback(() => {
     stream.current?.close();
@@ -171,6 +175,7 @@ export default function Console() {
       .then((snapshot) => {
         const next = fromSnapshot(snapshot);
         setChat(next);
+        setView("chat");
         setModeState(next.mode);
         if (isBusy(next)) listen(id, next.lastSeq);
       })
@@ -186,12 +191,16 @@ export default function Console() {
   const newConversation = () => {
     hangUp();
     setChat(null);
+    setView("chat");
   };
 
   const setMode = (value) => {
     if (!value || busy) return;
     storeMode(value);
-    if (chat && chat.mode !== value) newConversation();
+    if (chat && chat.mode !== value) {
+      hangUp();
+      setChat(null);
+    }
   };
 
   const send = async (message, withMode = mode, fresh = false) => {
@@ -220,11 +229,6 @@ export default function Console() {
     }
   };
 
-  const rerun = (message, withMode) => {
-    storeMode(withMode);
-    send(message, withMode, true);
-  };
-
   const decide = async (chatId, holdId, decision) => {
     setDeciding(true);
     try {
@@ -251,9 +255,27 @@ export default function Console() {
   };
 
   const hasTurns = !!chat && chat.turns.length > 0;
+  const unread = tickets.filter((t) => t.kind === "inbound" && !hidden.has(t.id)).length;
 
   const header = (
     <>
+      <div role="tablist" aria-label="View" className="inline-flex shrink-0 rounded-full bg-paper-3 p-0.5">
+        {[["chat", "Chat"], ["mail", "Mail"]].map(([id, label]) => (
+          <button
+            key={id}
+            role="tab"
+            aria-selected={view === id}
+            onClick={() => setView(id)}
+            className={cn(
+              "flex h-7 min-w-[72px] items-center justify-center gap-1.5 rounded-full px-4 text-[13px] font-medium transition-all",
+              view === id ? "bg-white text-ink shadow-sm ring-1 ring-line-strong" : "text-ink-3 hover:text-ink"
+            )}
+          >
+            {label}
+            {id === "mail" && unread > 0 && <span className="rounded-full bg-brand px-1.5 text-[10.5px] font-semibold leading-[18px] text-white">{unread}</span>}
+          </button>
+        ))}
+      </div>
       <ToggleGroup type="single" value={mode} onValueChange={setMode} aria-label="Defense mode">
         {MODES.map((m) => {
           const Icon = m.icon;
@@ -275,22 +297,34 @@ export default function Console() {
       onNew={newConversation}
       newDisabled={busy}
       header={header}
-      sidebar={<Recents rows={history} activeId={chat?.id} disabled={busy} onOpen={(id) => setParams({ chat: id })} onRename={renameChat} onArchive={archiveChat} onDelete={deleteChat} />}
+      sidebar={<Recents rows={history} activeId={chat?.id} disabled={busy} onOpen={(id) => { setView("chat"); setParams({ chat: id }); }} onRename={renameChat} onArchive={archiveChat} onDelete={deleteChat} />}
     >
       <main className="flex min-w-0 flex-1 flex-col">
+        <div className={cn("min-h-0 flex-1 flex-col", view === "mail" ? "flex" : "hidden")}>
+          <MailView
+            tickets={tickets}
+            hidden={hidden}
+            onHide={(id) => setHidden((s) => new Set(s).add(id))}
+            disabled={busy}
+            onHandle={(t) => { setView("chat"); send(`Handle @${t.id}`, mode, true); }}
+            onSent={loadTickets}
+          />
+        </div>
+        <div className={cn("min-h-0 flex-1 flex-col", view === "chat" ? "flex" : "hidden")}>
         <ScrollArea className="min-h-0 flex-1" viewportRef={viewport}>
           {hasTurns ? (
             <div className="mx-auto max-w-3xl px-4 py-6">
-              <ChatThread chat={chat} onDecide={decide} deciding={deciding} onRerun={rerun} />
+              <ChatThread chat={chat} onDecide={decide} deciding={deciding} />
             </div>
           ) : (
-            <EmptyState tickets={tickets} file={file} disabled={busy} onPick={(t) => send(`Handle @${t.id}`)} />
+            <EmptyState />
           )}
         </ScrollArea>
         <div className="shrink-0 px-3 pb-4 md:px-4">
           <div className={cn("mx-auto", hasTurns ? "max-w-3xl" : "max-w-2xl")}>
             <Composer tickets={tickets} customers={world?.customers || []} busy={busy} onSend={(message) => send(message)} onStop={stop} />
           </div>
+        </div>
         </div>
       </main>
     </AppShell>

@@ -123,7 +123,6 @@ export default function AppShell({ onNew, newDisabled, sidebar, header, aside, a
             </button>
           </div>
           <nav className="flex shrink-0 flex-col gap-px px-2 pb-2">
-            <Link to="/redteam" className={ROW}>Attacker arena</Link>
             <button onClick={onNew} disabled={newDisabled} className={cn(ROW, "text-left disabled:opacity-40")}>
               <SquarePen /> New chat
             </button>
