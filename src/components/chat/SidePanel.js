@@ -1,6 +1,6 @@
 import React from "react";
 import { ScrollArea } from "../ui/scroll-area";
-import { MODE_LABEL, OUTCOME, TONE, isLive } from "../../lib/run";
+import { MODE_LABEL, OUTCOME, TONE } from "../../lib/chat";
 import { cn } from "../../lib/utils";
 
 const MODES = ["off", "keyword", "riposte"];
@@ -15,24 +15,18 @@ function Section({ title, children }) {
   );
 }
 
-function Scoreboard({ runs, run }) {
-  const ticketId = run?.ticket?.id;
-  const latest = {};
-  runs.forEach((r) => {
-    if (r.ticket.id === ticketId && !isLive(r)) latest[r.mode] = r;
-  });
+function Scoreboard({ result }) {
   return (
     <dl className="divide-y divide-line rounded-lg border border-line bg-white">
       {MODES.map((mode) => {
-        const result = latest[mode];
-        const meta = result ? OUTCOME[result.outcome] || OUTCOME.error : null;
+        const meta = result[mode] ? OUTCOME[result[mode]] || OUTCOME.error : null;
         const tone = meta ? TONE[meta.tone] : null;
         return (
           <div key={mode} className="flex items-center gap-2 px-3 py-2 text-[13px]">
             <dt className="text-ink-2">{MODE_LABEL[mode]}</dt>
             <dd className={cn("ml-auto flex items-center gap-1.5", tone ? cn("font-medium", tone.text) : "text-ink-4")}>
               {tone && <span className={cn("h-1.5 w-1.5 rounded-full", tone.dot)} />}
-              {meta ? meta.label : "not run"}
+              {meta ? meta.label : "not tried"}
             </dd>
           </div>
         );
@@ -41,10 +35,10 @@ function Scoreboard({ runs, run }) {
   );
 }
 
-function Effects({ run }) {
-  const effects = run?.effects;
+function Effects({ chat }) {
+  const effects = chat?.effects;
   if (!effects) return <p className={EMPTY}>Nothing has left the sandbox yet.</p>;
-  const incidents = run.incidents || [];
+  const incidents = chat.turns.flatMap((t) => t.incidents || []);
   const leaked = (channel, to) => incidents.some((i) => i.kind === "leak" && i.channel === channel && i.to === to);
   const rows = [
     ...effects.outbox.map((m, i) => ({ key: `m${i}`, verb: "email", title: m.to, detail: m.subject, bad: leaked("send_email", m.to) })),
@@ -57,7 +51,7 @@ function Effects({ run }) {
     })),
     ...effects.replies.map((r, i) => ({ key: `p${i}`, verb: "reply", title: r.to || "the sender", detail: r.message, bad: leaked("reply", r.to) })),
   ];
-  if (!rows.length) return <p className={EMPTY}>Nothing left the sandbox in this run.</p>;
+  if (!rows.length) return <p className={EMPTY}>Nothing has left the sandbox in this chat.</p>;
   return (
     <ul className="divide-y divide-line rounded-lg border border-line bg-white">
       {rows.map(({ key, verb, title, detail, bad }) => (
@@ -74,15 +68,22 @@ function Effects({ run }) {
   );
 }
 
-export default function SidePanel({ runs, run, world }) {
+export default function SidePanel({ chat, compare, world }) {
   const policy = world?.policy;
   return (
     <ScrollArea className="h-full">
-      <Section title="Same ticket, each mode">
-        {run ? <Scoreboard runs={runs} run={run} /> : <p className={EMPTY}>Pick a ticket to start.</p>}
+      <Section title="Same message, each mode">
+        {compare ? (
+          <>
+            <p className="mb-2 truncate text-[12.5px] text-ink-3">{compare.message}</p>
+            <Scoreboard result={compare.result} />
+          </>
+        ) : (
+          <p className={EMPTY}>Ask Nova to handle a ticket to compare the defenses.</p>
+        )}
       </Section>
       <Section title="What left the sandbox">
-        <Effects run={run} />
+        <Effects chat={chat} />
       </Section>
       <Section title="Addresses on file">
         <ul className="divide-y divide-line rounded-lg border border-line bg-white">

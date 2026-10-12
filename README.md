@@ -1,16 +1,16 @@
 # Riposte (frontend)
 
-The console for Riposte, a provenance-based firewall for AI agent tool calls. It is a chat-style
-view of a support agent handling tickets, with every tool call shown alongside the firewall's
+The console for Riposte, a provenance-based firewall for AI agent tool calls. You chat with Nova, a support
+copilot, as a member of the support team. Every tool call it makes is shown alongside the firewall's
 decision and the source of each argument.
 
 ## What you can do
 
-- Pick an example ticket on the start screen (loaded from the backend's `tickets.json`) or write your own as a customer or an attacker.
-- Switch the defense between **Off**, **Keyword filter** and **Riposte**, and rerun the same ticket to compare.
-- See each tool call with its arguments tagged as trusted, from the ticket, ticket sender, or no source.
+- Talk to Nova, and type `@` to hand it a ticket or a customer. Tickets come from the backend's `tickets.json`; some were written by an attacker.
+- Switch the defense between **Off**, **Keyword filter** and **Riposte**, and try the same message again to compare.
+- See each tool call with its arguments tagged as trusted, from a ticket, ticket sender, or no source.
 - Approve or deny calls that Riposte holds for a person.
-- See what actually left the sandbox, and reopen past runs from the history list in the sidebar.
+- See what actually left the sandbox, and reopen past conversations from the history list in the sidebar.
 
 ## Stack
 
@@ -32,8 +32,8 @@ The app opens on http://localhost:3000 and talks to the backend at `REACT_APP_AP
 
 ```
 src/
-  api.js                 fetch client, token storage, EventSource for run streams
-  lib/run.js             folds the run's server-sent events into the chat view
+  api.js                 fetch client, token storage, EventSource for chat streams
+  lib/chat.js            folds a conversation's server-sent events into the chat view
   pages/Console.js       the chat console
   pages/Landing.js       landing page
   components/chat/       history list, thread, tool-call cards, composer, side panel

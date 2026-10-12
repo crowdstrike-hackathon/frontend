@@ -7,11 +7,11 @@ import AppShell from "../components/AppShell";
 import Composer from "../components/chat/Composer";
 import Recents from "../components/chat/Recents";
 import SidePanel from "../components/chat/SidePanel";
-import RunThread from "../components/chat/Thread";
+import ChatThread from "../components/chat/Thread";
 import { ScrollArea } from "../components/ui/scroll-area";
 import { ToggleGroup, ToggleGroupItem } from "../components/ui/toggle-group";
 import { Tooltip, TooltipContent, TooltipTrigger } from "../components/ui/tooltip";
-import { EVENT_TYPES, applyEvent, fromSnapshot, isLive, newRun } from "../lib/run";
+import { EVENT_TYPES, applyEvent, fromSnapshot, isBusy, newChat } from "../lib/chat";
 import { cn } from "../lib/utils";
 
 const MODE_KEY = "riposte_mode";
@@ -20,6 +20,7 @@ const MODES = [
   { id: "keyword", label: "Keyword filter", icon: Filter },
   { id: "riposte", label: "Riposte", icon: ShieldCheck },
 ];
+
 function savedMode() {
   try {
     const value = localStorage.getItem(MODE_KEY);
@@ -33,7 +34,7 @@ function ModelStatus({ agent }) {
   if (!agent) return null;
   const ok = agent.reachable && agent.available;
   const hint = ok
-    ? `The agent runs on ${agent.model} at ${agent.base_url}.`
+    ? `Nova runs on ${agent.model} at ${agent.base_url}.`
     : agent.reachable
     ? `The endpoint at ${agent.base_url} answers, but it has no model named ${agent.model}.`
     : `Nothing is answering at ${agent.base_url}.`;
@@ -53,13 +54,13 @@ function ModelStatus({ agent }) {
 function EmptyState({ tickets, file, disabled, onPick }) {
   return (
     <div className="mx-auto w-full max-w-2xl px-4 pb-6 pt-[10vh]">
-      <h1 className="text-[30px] font-semibold leading-tight tracking-tight text-ink">Send Nova a ticket</h1>
+      <h1 className="text-[30px] font-semibold leading-tight tracking-tight text-ink">Chat with Nova</h1>
       <p className="mt-2 max-w-xl text-[15px] leading-relaxed text-ink-3">
-        Nova is a support agent with real tools. It reads customer records, fetches API keys, issues refunds and sends email. Run a ticket, then switch the defense and run it again.
+        Nova is a support copilot with real tools. It reads tickets and customer records, fetches API keys, issues refunds and sends email. Talk to it, or type @ to hand it a ticket from the inbox.
       </p>
       <div className="mt-7 flex items-baseline gap-2 pb-2 text-[12px] text-ink-3">
-        <span className="font-medium">Example tickets</span>
-        <span>Canned support emails, some honest and some written by an attacker.</span>
+        <span className="font-medium">Inbox</span>
+        <span>Customer emails waiting for support. Some were written by an attacker.</span>
         <span className="ml-auto hidden font-mono text-[10.5px] text-ink-4 sm:block">{file?.path}</span>
       </div>
       {file?.errors?.length > 0 && (
@@ -69,16 +70,21 @@ function EmptyState({ tickets, file, disabled, onPick }) {
       <ul className="divide-y divide-line border-y border-line empty:hidden">
         {tickets.slice(0, 8).map((t) => (
           <li key={t.id}>
-            <button disabled={disabled} onClick={() => onPick(t)} className="flex w-full items-center gap-3 px-1 py-2.5 text-left transition-colors hover:bg-paper-3 disabled:opacity-50">
+            <button disabled={disabled} onClick={() => onPick(t)} className="group flex w-full items-center gap-3 px-1 py-2.5 text-left transition-colors hover:bg-paper-3 disabled:opacity-50">
               <span className="w-16 shrink-0 font-mono text-[11.5px] text-ink-4">{t.id}</span>
               <span className="min-w-0 flex-1 truncate text-[14px] text-ink">{t.title || t.subject}</span>
-              <span className="hidden truncate text-[12.5px] text-ink-3 sm:block">{t.from}</span>
+              <span className="hidden truncate text-[12.5px] text-ink-3 group-hover:hidden sm:block">{t.from}</span>
+              <span className="hidden shrink-0 text-[12.5px] font-medium text-brand sm:group-hover:block">Ask Nova to handle it</span>
             </button>
           </li>
         ))}
       </ul>
     </div>
   );
+}
+
+function compareKey(message) {
+  return message.trim().toLowerCase();
 }
 
 export default function Console() {
@@ -89,19 +95,18 @@ export default function Console() {
   const [world, setWorld] = useState(null);
   const [history, setHistory] = useState([]);
   const [mode, setModeState] = useState(savedMode);
-  const [runs, setRuns] = useState([]);
+  const [chat, setChat] = useState(null);
+  const [results, setResults] = useState({});
   const [starting, setStarting] = useState(false);
   const [deciding, setDeciding] = useState(false);
   const [panel, setPanel] = useState(true);
-  const streams = useRef({});
+  const stream = useRef(null);
   const viewport = useRef(null);
 
-  const active = runs[runs.length - 1];
-  const busy = starting || isLive(active);
+  const busy = starting || isBusy(chat);
   const modeInfo = meta?.modes?.find((m) => m.id === mode);
 
-  const setMode = (value) => {
-    if (!value) return;
+  const storeMode = (value) => {
     setModeState(value);
     try {
       localStorage.setItem(MODE_KEY, value);
@@ -119,61 +124,64 @@ export default function Console() {
     api.history().then(setHistory).catch(() => {});
   }, []);
 
-  const activeStatus = active?.status;
-  useEffect(() => {
-    if (!activeStatus || ["done", "error", "cancelled"].includes(activeStatus)) loadHistory();
-  }, [activeStatus, loadHistory]);
-
   useEffect(() => {
     api.meta().then(setMeta).catch((e) => toast.error(e.message));
     api.world().then(setWorld).catch(() => {});
     loadTickets();
-  }, [loadTickets]);
+    loadHistory();
+  }, [loadTickets, loadHistory]);
 
-  const update = useCallback((id, fn) => setRuns((prev) => prev.map((r) => (r.id === id ? fn(r) : r))), []);
+  const hangUp = useCallback(() => {
+    stream.current?.close();
+    stream.current = null;
+  }, []);
 
-  const listen = useCallback((id) => {
-    streams.current[id]?.close();
-    const es = api.runStream(id);
-    streams.current[id] = es;
+  useEffect(() => hangUp, [hangUp]);
+
+  const listen = useCallback((id, after) => {
+    hangUp();
+    const es = api.chatStream(id, after);
+    stream.current = es;
     const close = () => {
       es.close();
-      if (streams.current[id] === es) delete streams.current[id];
+      if (stream.current === es) stream.current = null;
     };
     EVENT_TYPES.forEach((type) =>
       es.addEventListener(type, (e) => {
         const event = JSON.parse(e.data);
-        update(id, (r) => applyEvent(r, event));
-        if (type === "done") close();
+        setChat((prev) => (prev && prev.id === id ? applyEvent(prev, event) : prev));
+        if (type === "turn_done") {
+          close();
+          loadHistory();
+        }
       })
     );
     es.onerror = () => {
+      if (stream.current !== es) return;
       close();
-      api.getRun(id)
+      api.getChat(id)
         .then((snapshot) => {
           const next = fromSnapshot(snapshot);
-          update(id, () => next);
-          if (isLive(next)) setTimeout(() => listen(id), 1500);
+          setChat((prev) => (prev && prev.id === id ? next : prev));
+          if (isBusy(next)) setTimeout(() => listen(id, next.lastSeq), 1500);
+          else loadHistory();
         })
         .catch(() => {
-          update(id, (r) => ({ ...r, status: "error", thinking: false, outcome: "error", summary: "Lost the connection to the Riposte API." }));
+          setChat((prev) => (prev && prev.id === id ? { ...prev, status: "idle", live: false } : prev));
+          toast.error("Lost the connection to the Riposte API.");
         });
     };
-  }, [update]);
+  }, [hangUp, loadHistory]);
 
   useEffect(() => {
-    const open = streams.current;
-    return () => Object.values(open).forEach((es) => es.close());
-  }, []);
-
-  useEffect(() => {
-    const id = params.get("run");
+    const id = params.get("chat");
     if (!id) return;
-    api.getRun(id)
+    api.getChat(id)
       .then((snapshot) => {
-        const run = fromSnapshot(snapshot);
-        setRuns([run]);
-        if (isLive(run)) listen(id);
+        const next = fromSnapshot(snapshot);
+        setChat(next);
+        setModeState(next.mode);
+        if (isBusy(next)) listen(id, next.lastSeq);
       })
       .catch((e) => toast.error(e.message))
       .finally(() => setParams({}, { replace: true }));
@@ -182,39 +190,64 @@ export default function Console() {
   useEffect(() => {
     const el = viewport.current;
     if (el) el.scrollTo({ top: el.scrollHeight, behavior: "smooth" });
-  }, [runs]);
+  }, [chat]);
 
-  const start = useCallback(async (body) => {
+  const lastTurn = chat?.turns[chat.turns.length - 1];
+  const settled = !!lastTurn && lastTurn.status !== "running" && lastTurn.acted;
+  const settledKey = settled ? compareKey(lastTurn.message) : "";
+  const settledMode = settled ? chat.mode : "";
+  const settledOutcome = settled ? lastTurn.outcome : "";
+  useEffect(() => {
+    if (!settledKey) return;
+    setResults((prev) => ({ ...prev, [settledKey]: { ...prev[settledKey], [settledMode]: settledOutcome } }));
+  }, [settledKey, settledMode, settledOutcome]);
+
+  const newConversation = () => {
+    hangUp();
+    setChat(null);
+  };
+
+  const setMode = (value) => {
+    if (!value || busy) return;
+    storeMode(value);
+    if (chat && chat.mode !== value) newConversation();
+  };
+
+  const send = async (message, withMode = mode, fresh = false) => {
+    if (busy) return;
     setStarting(true);
     try {
-      const snapshot = await api.createRun(body);
-      setRuns((prev) => [...prev, newRun(snapshot)]);
-      listen(snapshot.id);
+      const reuse = !fresh && chat && chat.live && chat.mode === withMode;
+      let snapshot = null;
+      if (reuse) {
+        try {
+          snapshot = await api.sendMessage(chat.id, message);
+          listen(chat.id, chat.lastSeq);
+        } catch {
+          snapshot = null;
+        }
+      }
+      if (!snapshot) {
+        snapshot = await api.createChat({ mode: withMode, message });
+        setChat(newChat(snapshot));
+        listen(snapshot.id, -1);
+      }
     } catch (e) {
       toast.error(e.message);
     } finally {
       setStarting(false);
     }
-  }, [listen]);
-
-  const runTicket = (ticket, withMode = mode) => {
-    if (busy) return;
-    if (ticket.kind === "custom") {
-      start({ mode: withMode, ticket: { from: ticket.from, subject: ticket.subject, body: ticket.body, customer_id: ticket.customer_id } });
-    } else {
-      start({ mode: withMode, ticket_id: ticket.id });
-    }
   };
 
-  const rerun = (ticket, withMode) => {
-    setMode(withMode);
-    runTicket(ticket, withMode);
+  const rerun = (message, withMode) => {
+    storeMode(withMode);
+    send(message, withMode, true);
   };
 
-  const decide = async (runId, holdId, decision) => {
+  const decide = async (chatId, holdId, decision) => {
     setDeciding(true);
     try {
-      await api.decideHold(runId, holdId, decision);
+      await api.decideHold(chatId, holdId, decision);
     } catch (e) {
       toast.error(e.message);
     } finally {
@@ -223,8 +256,12 @@ export default function Console() {
   };
 
   const stop = () => {
-    if (active && isLive(active)) api.cancelRun(active.id).catch((e) => toast.error(e.message));
+    if (chat && isBusy(chat)) api.cancelChat(chat.id).catch((e) => toast.error(e.message));
   };
+
+  const compared = [...(chat?.turns || [])].reverse().find((t) => t.acted);
+  const compare = compared ? { message: compared.message, result: results[compareKey(compared.message)] || {} } : null;
+  const hasTurns = !!chat && chat.turns.length > 0;
 
   const header = (
     <>
@@ -232,7 +269,7 @@ export default function Console() {
         {MODES.map((m) => {
           const Icon = m.icon;
           return (
-            <ToggleGroupItem key={m.id} value={m.id} aria-label={m.label}>
+            <ToggleGroupItem key={m.id} value={m.id} aria-label={m.label} disabled={busy}>
               <Icon /> <span className={cn(m.id !== mode && "hidden sm:inline")}>{m.label}</span>
             </ToggleGroupItem>
           );
@@ -254,32 +291,30 @@ export default function Console() {
 
   return (
     <AppShell
-      onNew={() => setRuns([])}
+      onNew={newConversation}
       newDisabled={busy}
       header={header}
-      sidebar={<Recents rows={history} activeId={active?.id} disabled={busy} onOpen={(id) => setParams({ run: id })} />}
+      sidebar={<Recents rows={history} activeId={chat?.id} disabled={busy} onOpen={(id) => setParams({ chat: id })} />}
     >
       <main className="flex min-w-0 flex-1 flex-col">
         <ScrollArea className="min-h-0 flex-1" viewportRef={viewport}>
-          {runs.length === 0 ? (
-            <EmptyState tickets={tickets} file={file} disabled={busy} onPick={(t) => runTicket(t)} />
-          ) : (
-            <div className="mx-auto flex max-w-3xl flex-col gap-10 px-4 py-6">
-              {runs.map((run, i) => (
-                <RunThread key={run.id} run={run} onDecide={decide} deciding={deciding} onRerun={rerun} canRerun={!busy && i === runs.length - 1} />
-              ))}
+          {hasTurns ? (
+            <div className="mx-auto max-w-3xl px-4 py-6">
+              <ChatThread chat={chat} onDecide={decide} deciding={deciding} onRerun={rerun} />
             </div>
+          ) : (
+            <EmptyState tickets={tickets} file={file} disabled={busy} onPick={(t) => send(`Handle @${t.id}`)} />
           )}
         </ScrollArea>
         <div className="shrink-0 px-3 pb-4 md:px-4">
-          <div className={cn("mx-auto", runs.length === 0 ? "max-w-2xl" : "max-w-3xl")}>
-            <Composer customers={world?.customers || []} busy={busy} onSend={(ticket) => start({ mode, ticket })} onStop={stop} />
+          <div className={cn("mx-auto", hasTurns ? "max-w-3xl" : "max-w-2xl")}>
+            <Composer tickets={tickets} customers={world?.customers || []} busy={busy} onSend={(message) => send(message)} onStop={stop} />
           </div>
         </div>
       </main>
       {panel && (
         <aside className="hidden w-[320px] shrink-0 border-l border-line bg-paper-2 xl:block">
-          <SidePanel runs={runs} run={active} world={world} />
+          <SidePanel chat={chat} compare={compare} world={world} />
         </aside>
       )}
     </AppShell>

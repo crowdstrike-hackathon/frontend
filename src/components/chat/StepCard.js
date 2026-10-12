@@ -5,7 +5,7 @@ import { Badge } from "../ui/badge";
 import { Button } from "../ui/button";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "../ui/collapsible";
 import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
-import { SOURCE } from "../../lib/run";
+import { SOURCE } from "../../lib/chat";
 import { cn } from "../../lib/utils";
 
 const TOOL_ICON = {
