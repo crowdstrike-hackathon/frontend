@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { ArrowRight, Building2, Check, CircleAlert, EyeOff, Copy, Cpu, Hand, Inbox, Rocket, Route, Scale, ShieldCheck, X } from "lucide-react";
 import {
@@ -12,6 +12,9 @@ import {
   InfiniteMovingCards,
 } from "../ui/aceternity";
 import SiteNav from "../components/SiteNav";
+import FlowMap from "../components/chat/FlowMap";
+import { fromSnapshot } from "../lib/chat";
+import demoRun from "../assets/landing/demo-run.json";
 import { useAuth } from "../context/AuthContext";
 import { BOARD_FRAMES, DUSK, TECHS } from "../lib/content";
 import shotBlock from "../assets/landing/console-block.jpg";
@@ -319,6 +322,66 @@ const BUYERS = [
   },
 ];
 
+// The ticket email as the agent read it, with only the sentence the cause finder pinned marked red.
+function EmailWithCause({ text, cause }) {
+  const split = text.indexOf("\n\n");
+  const header = split >= 0 ? text.slice(0, split) : "";
+  const body = cause?.body || (split >= 0 ? text.slice(split + 2) : text);
+  const lines = Object.fromEntries(
+    header.split("\n").map((l) => l.split(": ")).filter((p) => p.length === 2).map(([k, v]) => [k, v]),
+  );
+  const parts = [];
+  let at = 0;
+  [...(cause?.guilty || [])].sort((a, b) => a[0] - b[0]).forEach(([start, end], i) => {
+    if (start > at) parts.push(<span key={`t${i}`}>{body.slice(at, start)}</span>);
+    parts.push(
+      <mark key={`g${i}`} className="rounded-[3px] bg-red-100 px-0.5 text-red-800 ring-1 ring-red-300">{body.slice(start, end)}</mark>,
+    );
+    at = end;
+  });
+  if (at < body.length) parts.push(<span key="end">{body.slice(at)}</span>);
+  return (
+    <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm md:p-6">
+      <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1 text-[13px] text-slate-500">
+        <span className="text-[11px] font-semibold uppercase tracking-[0.14em] text-sky-700">The email the agent read</span>
+        {lines.From && <span>from {lines.From}</span>}
+      </div>
+      {lines.Subject && <div className="mt-2 text-lg font-semibold text-slate-900">{lines.Subject}</div>}
+      <p className="mt-2 text-[15px] leading-relaxed text-slate-700">{parts}</p>
+      {cause?.stable && cause.guilty?.length > 0 && (
+        <p className="mt-3 text-[13px] text-slate-500">
+          Riposte asked the agent again {cause.tested} times, each time with one sentence removed. Without the
+          sentence in red, it no longer tried to {cause.tool === "send_email" ? "email the key" : `call ${cause.tool}`}.
+        </p>
+      )}
+    </div>
+  );
+}
+
+function SeeWhatHappened() {
+  const turn = useMemo(
+    () => fromSnapshot({ id: "landing-demo", mode: demoRun.mode, events: demoRun.events, status: "done" }).turns[0],
+    [],
+  );
+  const read = turn.items.find((i) => i.tool === "read_ticket");
+  const cause = turn.items.find((i) => i.cause)?.cause;
+  return (
+    <section id="trace" className="scroll-mt-24 px-4 py-24 md:px-8 md:py-32">
+      <SectionHeading
+        eyebrow="Explainable"
+        sub="Every run draws itself: where each piece of information came from, what it made the agent do, and the sentence in the email that caused it."
+      >
+        See exactly what happened
+      </SectionHeading>
+      <div className="mx-auto flex max-w-4xl flex-col gap-5">
+        {read?.result?.text && <EmailWithCause text={read.result.text} cause={cause} />}
+        <FlowMap turn={turn} showCause={false} />
+        <p className="text-center text-[13px] text-slate-500">This is a real run of ticket TK-2001. Click any box to trace it, or press Replay.</p>
+      </div>
+    </section>
+  );
+}
+
 function SectionHeading({ eyebrow, children, sub }) {
   return (
     <div className="mx-auto mb-12 max-w-3xl px-2 text-center">
@@ -338,6 +401,8 @@ export default function Landing() {
       <Hero appHref={appHref} signedIn={!!user} />
 
       <Demo />
+
+      <SeeWhatHappened />
 
       <StatusBoard />
 
