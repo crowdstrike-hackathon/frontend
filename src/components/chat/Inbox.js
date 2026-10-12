@@ -2,8 +2,6 @@ import React from "react";
 import { ScrollArea } from "../ui/scroll-area";
 import { cn } from "../../lib/utils";
 
-const DOT = { attack: "bg-red-600", benign: "bg-emerald-600" };
-
 export default function Inbox({ tickets, file, activeId, disabled, onPick }) {
   return (
     <div className="flex h-full min-h-0 flex-col">
@@ -24,17 +22,13 @@ export default function Inbox({ tickets, file, activeId, disabled, onPick }) {
               key={t.id}
               disabled={disabled}
               onClick={() => onPick(t)}
-              title={t.kind || undefined}
               className={cn(
                 "group rounded-md px-2 py-1.5 text-left transition-colors hover:bg-paper-3 disabled:cursor-not-allowed disabled:opacity-50",
                 activeId === t.id && "bg-paper-3"
               )}
             >
-              <div className="flex items-center gap-2">
-                <span className={cn("h-1.5 w-1.5 shrink-0 rounded-full", DOT[t.kind] || "bg-ink-4")} />
-                <span className="min-w-0 flex-1 truncate text-[13.5px] text-ink">{t.title || t.subject}</span>
-              </div>
-              <div className="mt-px flex items-center gap-1.5 pl-3.5 text-[11.5px] text-ink-3">
+              <div className="truncate text-[13.5px] text-ink">{t.title || t.subject}</div>
+              <div className="mt-px flex items-center gap-1.5 text-[11.5px] text-ink-3">
                 <span className="font-mono text-[10.5px]">{t.id}</span>
                 <span className="truncate">{t.from}</span>
               </div>
