@@ -1,22 +1,65 @@
 import React, { useEffect, useRef, useState } from "react";
 import toast from "react-hot-toast";
 import { motion, AnimatePresence } from "framer-motion";
-import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Cell, LabelList } from "recharts";
-import { Swords, Play, Loader2, ShieldCheck, ShieldX, Bug, Cpu } from "lucide-react";
+import { Swords, Play, Loader2, ShieldCheck, ShieldX, Bug, FileSearch, AlertTriangle } from "lucide-react";
 import { api } from "../api";
-import { Panel, Empty, Chip, FROSTED_GLASS } from "../components/Sky";
+import { Panel, Empty, Chip, Page, PageHeader, Segmented, BTN_PRIMARY, SURFACE } from "../components/Sky";
 import { NumberTicker } from "../ui/aceternity";
 import { cn } from "../lib/utils";
 
-function RateTile({ label, rate, caught, total, accent }) {
+const SEV = {
+  critical: "bg-rose-500/15 text-rose-300",
+  high: "bg-orange-500/15 text-orange-300",
+  medium: "bg-amber-500/15 text-amber-300",
+  low: "bg-white/[0.06] text-slate-400",
+};
+
+function ScanView({ scan, running }) {
+  if (!scan) {
+    return (
+      <Panel icon={<FileSearch className="h-4 w-4 text-slate-500" />} title="Codebase findings" className="min-h-[24rem] flex-1">
+        <Empty icon={running ? Loader2 : FileSearch}>{running ? "Scanning…" : "Scan the agent's code for prompt-injection paths, unsafe tool use, unguarded egress, and hardcoded secrets."}</Empty>
+      </Panel>
+    );
+  }
   return (
-    <div className={cn("relative overflow-hidden rounded-3xl p-5 text-white shadow-lg bg-gradient-to-br", accent)}>
-      <div className="text-xs font-semibold uppercase tracking-wide text-white/80">{label}</div>
-      <div className="mt-1 flex items-end gap-1">
-        <NumberTicker value={Math.round((rate || 0) * 100)} className="text-5xl font-bold tabular-nums" />
-        <span className="pb-1.5 text-2xl font-bold">%</span>
+    <Panel
+      icon={<FileSearch className="h-4 w-4 text-slate-500" />}
+      title="Codebase findings"
+      right={<span>{scan.findings.length} issues · {scan.files_scanned} files</span>}
+      className="min-h-[24rem] flex-1"
+    >
+      <ul className="scrollbar-thin min-h-0 flex-1 overflow-y-auto px-4 pb-3">
+        {scan.findings.map((f) => (
+          <li key={f.id} className="border-t border-white/[0.06] py-3 first:border-t-0">
+            <div className="flex items-center gap-2">
+              <Chip className={cn("py-0.5", SEV[f.severity] || SEV.low)}><AlertTriangle className="h-3 w-3" /> {f.severity}</Chip>
+              <span className="text-[13px] font-semibold text-slate-100">{f.title}</span>
+              {f.attack_id && <span className="ml-auto shrink-0 font-mono text-[11px] text-slate-500">{f.attack_id}</span>}
+            </div>
+            <p className="mt-1 break-all font-mono text-[11px] text-slate-400">{f.file}:{f.line} — {f.snippet}</p>
+            <p className="mt-1 text-[12px] leading-relaxed text-emerald-300">→ {f.recommendation}</p>
+          </li>
+        ))}
+      </ul>
+    </Panel>
+  );
+}
+
+function Stat({ label, value, suffix, note, bar, barClass }) {
+  return (
+    <div className={cn(SURFACE, "p-5")}>
+      <div className="text-xs font-medium text-slate-400">{label}</div>
+      <div className="mt-2 flex items-baseline gap-0.5 text-white">
+        <NumberTicker value={value} className="text-4xl font-semibold tabular-nums tracking-tight" />
+        {suffix && <span className="text-xl font-semibold text-slate-400">{suffix}</span>}
       </div>
-      <div className="mt-1 text-sm text-white/85">caught {caught}/{total} attacks</div>
+      {bar !== undefined && (
+        <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-white/[0.06]">
+          <div className={cn("h-full rounded-full transition-all duration-700", barClass)} style={{ width: `${bar}%` }} />
+        </div>
+      )}
+      <div className="mt-2 text-xs text-slate-500">{note}</div>
     </div>
   );
 }
@@ -26,11 +69,26 @@ export default function RedTeam() {
   const [progress, setProgress] = useState([]);
   const [source, setSource] = useState("payload-bank");
   const [report, setReport] = useState(null);
+  const [target, setTarget] = useState("nova");
+  const [scan, setScan] = useState(null);
   const esRef = useRef(null);
 
   useEffect(() => () => esRef.current?.close(), []);
 
   const finish = (rep) => { setReport(rep); setRunning(false); };
+
+  const scanCode = async () => {
+    setRunning(true);
+    setScan(null);
+    try {
+      setScan(await api.scanCode({ use_sample: true }));
+      toast.success("Scan complete");
+    } catch (e) {
+      toast.error(e.message);
+    } finally {
+      setRunning(false);
+    }
+  };
 
   const launch = async () => {
     esRef.current?.close();
@@ -52,78 +110,54 @@ export default function RedTeam() {
   };
 
   const total = report?.total || (progress[0] ? progress[0].total : 0);
-  const chartData = report
-    ? [
-        { name: "Riposte", rate: Math.round(report.riposte_rate * 100), fill: "#059669" },
-        { name: "Naive guard", rate: Math.round(report.baseline_rate * 100), fill: "#94a3b8" },
-      ]
-    : [];
+  const rip = Math.round((report?.riposte_rate || 0) * 100);
+  const base = Math.round((report?.baseline_rate || 0) * 100);
 
   return (
-    <div className="scrollbar-thin flex h-full flex-col gap-4 overflow-y-auto px-4 pb-6 pt-3 md:px-6">
-      <header className={cn(FROSTED_GLASS, "flex flex-wrap items-center gap-4 px-5 py-4")}>
-        <div className="flex items-center gap-3">
-          <div className="grid h-10 w-10 place-items-center rounded-2xl bg-rose-600/10 text-rose-700">
-            <Swords className="h-5 w-5" />
-          </div>
-          <div>
-            <h1 className="text-lg font-bold tracking-tight text-slate-900">Red Team at Scale</h1>
-            <p className="text-xs text-slate-500">Fire a campaign of injection attacks at Nova and score Riposte against a naive guardrail.</p>
-          </div>
-        </div>
-        <div className="ml-auto flex items-center gap-3">
-          <Chip className="bg-slate-900/5 text-slate-600"><Cpu className="h-3 w-3" /> {source === "local-a100" ? "local A100" : "payload bank"}</Chip>
-          <button
-            onClick={launch}
-            disabled={running}
-            className="flex items-center gap-2 rounded-full bg-slate-900 px-5 py-2.5 text-sm font-semibold text-white shadow-md transition hover:bg-slate-800 disabled:opacity-60"
-          >
-            {running ? <Loader2 className="h-4 w-4 animate-spin" /> : <Play className="h-4 w-4" />} Launch red team
-          </button>
-        </div>
-      </header>
+    <Page>
+      <PageHeader title="Red Team" subtitle="Attack your own agent before someone else does.">
+        <Segmented
+          value={target}
+          onChange={setTarget}
+          disabled={running}
+          options={[
+            { value: "nova", label: "Live agent", icon: Swords },
+            { value: "code", label: "Codebase", icon: FileSearch },
+          ]}
+        />
+        <button onClick={target === "code" ? scanCode : launch} disabled={running} className={BTN_PRIMARY}>
+          {running ? <Loader2 className="h-4 w-4 animate-spin" /> : target === "code" ? <FileSearch className="h-4 w-4" /> : <Play className="h-4 w-4" />}
+          {target === "code" ? "Scan codebase" : "Launch campaign"}
+        </button>
+      </PageHeader>
 
-      <div className="grid gap-4 lg:grid-cols-3">
-        <RateTile label="Riposte" rate={report?.riposte_rate} caught={report?.riposte_caught || 0} total={total} accent="from-emerald-600 via-emerald-500 to-teal-500" />
-        <RateTile label="Naive guardrail" rate={report?.baseline_rate} caught={report?.baseline_caught || 0} total={total} accent="from-slate-600 via-slate-500 to-slate-600" />
-        <Panel icon={<ShieldCheck className="h-4 w-4 text-emerald-600" />} title="Catch rate" className="min-h-[9rem]">
-          {report ? (
-            <div className="h-40 w-full px-3 pb-3">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={chartData} layout="vertical" margin={{ left: 8, right: 28, top: 6, bottom: 6 }}>
-                  <XAxis type="number" domain={[0, 100]} hide />
-                  <YAxis type="category" dataKey="name" width={82} tick={{ fontSize: 12, fill: "#475569" }} axisLine={false} tickLine={false} />
-                  <Bar dataKey="rate" radius={[6, 6, 6, 6]} barSize={26}>
-                    {chartData.map((d, i) => <Cell key={i} fill={d.fill} />)}
-                    <LabelList dataKey="rate" position="right" formatter={(v) => `${v}%`} style={{ fontSize: 12, fontWeight: 700, fill: "#0f172a" }} />
-                  </Bar>
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
-          ) : (
-            <Empty icon={ShieldCheck}>Launch a campaign to compare Riposte against the guardrail everyone else ships.</Empty>
-          )}
-        </Panel>
+      {target === "code" && <ScanView scan={scan} running={running} />}
+
+      {target === "nova" && <>
+      <div className="grid gap-5 md:grid-cols-3">
+        <Stat label="Caught by Riposte" value={rip} suffix="%" bar={rip} barClass="bg-emerald-400" note={report ? `${report.riposte_caught} of ${total} attacks blocked` : "Run a campaign to measure"} />
+        <Stat label="Caught by a keyword guardrail" value={base} suffix="%" bar={base} barClass="bg-slate-500" note={report ? `${report.baseline_caught} of ${total} attacks blocked` : "The baseline most teams ship"} />
+        <Stat label="Attacks fired" value={progress.length} note={source === "local-a100" ? "Written by your local red model" : "From the built-in payload bank"} />
       </div>
 
-      <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_380px]">
-        <Panel icon={<Swords className="h-4 w-4 text-sky-600" />} title="Attack feed" right={<span>{progress.length}{total ? `/${total}` : ""}</span>} className="h-[26rem]">
+      <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_380px]">
+        <Panel icon={<Swords className="h-4 w-4 text-slate-500" />} title="Attack feed" right={<span>{progress.length}{total ? `/${total}` : ""}</span>} className="h-[26rem]">
           {progress.length === 0 && !running ? (
-            <Empty icon={Swords}>Each attack the uncensored red model throws shows up here, scored live.</Empty>
+            <Empty icon={Swords}>Each attack shows up here as it is fired, with who caught it.</Empty>
           ) : (
-            <ul className="scrollbar-thin min-h-0 flex-1 overflow-y-auto px-5">
+            <ul className="scrollbar-thin min-h-0 flex-1 overflow-y-auto px-4">
               <AnimatePresence initial={false}>
                 {progress.map((p) => (
-                  <motion.li key={p.index} layout initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} className="flex items-center gap-2 border-t border-slate-900/5 py-2.5 first:border-t-0">
-                    <span className="w-8 shrink-0 font-mono text-[11px] text-slate-400">#{p.index}</span>
-                    <span className="truncate text-[13px] font-medium text-slate-800">{p.technique}</span>
+                  <motion.li key={p.index} layout initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} className="flex items-center gap-2 border-t border-white/[0.06] py-2.5 first:border-t-0">
+                    <span className="w-8 shrink-0 font-mono text-[11px] text-slate-500">#{p.index}</span>
+                    <span className="truncate text-[13px] font-medium text-slate-200">{p.technique}</span>
                     <span className="ml-auto flex shrink-0 items-center gap-1.5">
                       {p.riposte === "blocked"
-                        ? <Chip className="bg-emerald-500/15 text-emerald-700"><ShieldCheck className="h-3 w-3" /> Riposte</Chip>
-                        : <Chip className="bg-rose-500/15 text-rose-700"><ShieldX className="h-3 w-3" /> Riposte</Chip>}
+                        ? <Chip className="bg-emerald-500/15 text-emerald-300"><ShieldCheck className="h-3 w-3" /> Riposte caught</Chip>
+                        : <Chip className="bg-rose-500/15 text-rose-300"><ShieldX className="h-3 w-3" /> Riposte missed</Chip>}
                       {p.baseline === "blocked"
-                        ? <Chip className="bg-emerald-500/10 text-emerald-600">naive</Chip>
-                        : <Chip className="bg-rose-500/10 text-rose-600">naive</Chip>}
+                        ? <Chip className="bg-white/[0.06] text-slate-300">keyword caught</Chip>
+                        : <Chip className="bg-white/[0.03] text-slate-500">keyword missed</Chip>}
                     </span>
                   </motion.li>
                 ))}
@@ -132,20 +166,20 @@ export default function RedTeam() {
           )}
         </Panel>
 
-        <Panel icon={<Bug className="h-4 w-4 text-rose-600" />} title="Bypasses found" right={<span>{report?.bypasses?.length || 0}</span>} className="h-[26rem]">
+        <Panel icon={<Bug className="h-4 w-4 text-slate-500" />} title="Bypasses found" right={<span>{report?.bypasses?.length || 0}</span>} className="h-[26rem]">
           {!report ? (
-            <Empty icon={Bug}>Attacks that slipped past Riposte land here — the product's own backlog.</Empty>
+            <Empty icon={Bug}>Attacks that got past Riposte are listed here so you know what to fix next.</Empty>
           ) : report.bypasses.length === 0 ? (
-            <Empty icon={ShieldCheck}>No bypasses this run — Riposte held the line.</Empty>
+            <Empty icon={ShieldCheck}>No bypasses this run.</Empty>
           ) : (
-            <ul className="scrollbar-thin min-h-0 flex-1 overflow-y-auto px-5 pb-3">
+            <ul className="scrollbar-thin min-h-0 flex-1 overflow-y-auto px-4 pb-3">
               {report.bypasses.map((b, i) => (
-                <li key={i} className="border-t border-slate-900/5 py-3 first:border-t-0">
+                <li key={i} className="border-t border-white/[0.06] py-3 first:border-t-0">
                   <div className="flex items-center gap-2">
-                    <span className="text-[13px] font-semibold text-slate-900">{b.technique}</span>
-                    <Chip className="ml-auto bg-rose-500/15 text-rose-700">{b.attack_id}</Chip>
+                    <span className="text-[13px] font-semibold text-slate-100">{b.technique}</span>
+                    <Chip className="ml-auto bg-rose-500/15 text-rose-300">{b.attack_id}</Chip>
                   </div>
-                  <p className="mt-1 break-words font-mono text-[11px] leading-relaxed text-slate-500">{b.body}</p>
+                  <p className="mt-1 break-words font-mono text-[11px] leading-relaxed text-slate-400">{b.body}</p>
                 </li>
               ))}
             </ul>
@@ -154,26 +188,26 @@ export default function RedTeam() {
       </div>
 
       {report && (
-        <Panel icon={<ShieldCheck className="h-4 w-4 text-sky-600" />} title="By tactic (MITRE ATT&CK)">
-          <div className="px-5 pb-4">
+        <Panel icon={<ShieldCheck className="h-4 w-4 text-slate-500" />} title="By MITRE ATT&CK technique">
+          <div className="px-4 pb-4">
             <table className="w-full text-sm">
               <thead>
-                <tr className="text-left text-[11px] uppercase tracking-wide text-slate-400">
+                <tr className="text-left text-[11px] uppercase tracking-wide text-slate-500">
                   <th className="py-2">Tactic</th>
                   <th className="py-2">ID</th>
                   <th className="py-2 text-right">Attacks</th>
                   <th className="py-2 text-right">Riposte</th>
-                  <th className="py-2 text-right">Naive</th>
+                  <th className="py-2 text-right">Keyword</th>
                 </tr>
               </thead>
               <tbody>
                 {report.by_tactic.map((t) => (
-                  <tr key={t.attack_id} className="border-t border-slate-900/5">
-                    <td className="py-2 font-medium text-slate-800">{t.name}</td>
-                    <td className="py-2 font-mono text-[12px] text-slate-500">{t.attack_id}</td>
-                    <td className="py-2 text-right tabular-nums text-slate-600">{t.total}</td>
-                    <td className="py-2 text-right font-semibold tabular-nums text-emerald-700">{t.riposte}/{t.total}</td>
-                    <td className="py-2 text-right tabular-nums text-slate-500">{t.baseline}/{t.total}</td>
+                  <tr key={t.attack_id} className="border-t border-white/[0.06]">
+                    <td className="py-2 font-medium text-slate-200">{t.name}</td>
+                    <td className="py-2 font-mono text-[12px] text-slate-400">{t.attack_id}</td>
+                    <td className="py-2 text-right tabular-nums text-slate-400">{t.total}</td>
+                    <td className="py-2 text-right font-semibold tabular-nums text-emerald-300">{t.riposte}/{t.total}</td>
+                    <td className="py-2 text-right tabular-nums text-slate-400">{t.baseline}/{t.total}</td>
                   </tr>
                 ))}
               </tbody>
@@ -181,6 +215,7 @@ export default function RedTeam() {
           </div>
         </Panel>
       )}
-    </div>
+      </>}
+    </Page>
   );
 }

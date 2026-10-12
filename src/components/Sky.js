@@ -1,38 +1,74 @@
 import React from "react";
 import { cn } from "../lib/utils";
-import { GlowingEffect } from "../ui/aceternity";
 
-// Clear glass for text that sits straight on the sky (white text).
-export const CLEAR_GLASS =
-  "rounded-3xl border border-white/30 bg-white/10 shadow-[inset_0_1px_0_rgba(255,255,255,0.45),0_10px_40px_rgba(8,30,66,0.18)] backdrop-blur-xl";
+export const SURFACE = "rounded-2xl border border-white/[0.08] bg-white/[0.025]";
+export const CLEAR_GLASS = SURFACE;
+export const FROSTED_GLASS = SURFACE;
 
-// Frosted glass for dense, dark-on-light content.
-export const FROSTED_GLASS =
-  "rounded-3xl border border-white/60 bg-white/75 shadow-[inset_0_1px_0_rgba(255,255,255,0.9),0_10px_40px_rgba(8,30,66,0.16)] backdrop-blur-2xl";
+export const BTN_PRIMARY =
+  "inline-flex h-9 items-center justify-center gap-2 rounded-lg bg-white px-4 text-sm font-semibold text-black transition hover:bg-slate-200 disabled:opacity-50";
+export const BTN_SECONDARY =
+  "inline-flex h-9 items-center justify-center gap-2 rounded-lg border border-white/15 px-4 text-sm font-medium text-slate-200 transition hover:bg-white/[0.06] disabled:opacity-50";
+export const INPUT =
+  "w-full rounded-lg border border-white/10 bg-white/[0.03] px-3 py-2 text-sm text-slate-100 outline-none transition placeholder:text-slate-600 focus:border-white/30 disabled:opacity-60";
 
-// Still sky with soft cloud banks: the in-app backdrop. The animated shader stays on the landing page.
 export function SkyBackdrop() {
+  return <div aria-hidden="true" className="pointer-events-none absolute inset-0 bg-[#0a0e14]" />;
+}
+
+export function Page({ children, className }) {
   return (
-    <div aria-hidden="true" className="pointer-events-none absolute inset-0 overflow-hidden bg-[linear-gradient(180deg,#1b4a8a_0%,#3a79ba_36%,#86b8e3_74%,#cfe4f5_100%)]">
-      <div className="absolute -left-40 top-[26%] h-56 w-[46rem] rounded-full bg-white/45 blur-3xl" />
-      <div className="absolute -right-32 top-[48%] h-52 w-[40rem] rounded-full bg-white/40 blur-3xl" />
-      <div className="absolute left-[18%] top-[8%] h-28 w-[26rem] rounded-full bg-white/20 blur-3xl" />
-      <div className="absolute -bottom-28 left-[12%] h-72 w-[64rem] rounded-full bg-white/70 blur-3xl" />
-      <div className="absolute -bottom-20 right-[4%] h-56 w-[34rem] rounded-full bg-white/60 blur-3xl" />
+    <div className="scrollbar-thin h-full overflow-y-auto">
+      <div className={cn("mx-auto flex min-h-full w-full max-w-6xl flex-col gap-5 px-6 pb-10 pt-8 lg:px-10", className)}>{children}</div>
+    </div>
+  );
+}
+
+export function PageHeader({ title, subtitle, children }) {
+  return (
+    <header className="flex flex-wrap items-end gap-x-6 gap-y-3">
+      <div className="min-w-0">
+        <h1 className="text-[22px] font-semibold tracking-tight text-white">{title}</h1>
+        {subtitle && <p className="mt-1 max-w-2xl text-sm text-slate-400">{subtitle}</p>}
+      </div>
+      {children && <div className="ml-auto flex flex-wrap items-center gap-2">{children}</div>}
+    </header>
+  );
+}
+
+export function Segmented({ value, onChange, options, disabled }) {
+  return (
+    <div className="inline-flex h-9 items-center rounded-lg border border-white/10 bg-white/[0.03] p-0.5">
+      {options.map((o) => {
+        const active = o.value === value;
+        const Icon = o.icon;
+        return (
+          <button
+            key={String(o.value)}
+            disabled={disabled}
+            onClick={() => onChange(o.value)}
+            className={cn(
+              "flex h-full items-center gap-1.5 rounded-md px-3 text-[13px] font-medium transition disabled:opacity-60",
+              active ? o.activeClass || "bg-white/[0.12] text-white" : "text-slate-400 hover:text-slate-200"
+            )}
+          >
+            {Icon && <Icon className="h-3.5 w-3.5" />} {o.label}
+          </button>
+        );
+      })}
     </div>
   );
 }
 
 export function Panel({ title, icon, right, children, className }) {
   return (
-    <section className={cn(FROSTED_GLASS, "relative flex min-h-0 flex-col", className)}>
-      <GlowingEffect disabled={false} glow proximity={72} spread={34} borderWidth={2} />
-      <header className="relative flex items-center gap-2.5 px-5 pb-3 pt-4">
+    <section className={cn(SURFACE, "relative flex min-h-0 flex-col", className)}>
+      <header className="flex h-11 shrink-0 items-center gap-2 border-b border-white/[0.06] px-4">
         {icon}
-        <h2 className="whitespace-nowrap text-sm font-semibold text-slate-900">{title}</h2>
+        <h2 className="whitespace-nowrap text-[13px] font-medium text-slate-200">{title}</h2>
         {right && <div className="ml-auto flex items-center gap-2 text-xs text-slate-500">{right}</div>}
       </header>
-      <div className="relative flex min-h-0 flex-1 flex-col overflow-hidden rounded-b-3xl">{children}</div>
+      <div className="relative flex min-h-0 flex-1 flex-col overflow-hidden rounded-b-2xl">{children}</div>
     </section>
   );
 }
@@ -40,12 +76,12 @@ export function Panel({ title, icon, right, children, className }) {
 export function Empty({ icon: Icon, children }) {
   return (
     <div className="flex flex-1 flex-col items-center justify-center gap-3 px-6 py-10 text-center text-sm text-slate-500">
-      {Icon && <Icon className="h-7 w-7 text-sky-600/50" />}
+      {Icon && <Icon className="h-6 w-6 text-slate-600" />}
       <p className="max-w-xs">{children}</p>
     </div>
   );
 }
 
 export function Chip({ className, children }) {
-  return <span className={cn("inline-flex items-center gap-1.5 whitespace-nowrap rounded-full px-2.5 py-1 text-[11px] font-medium", className)}>{children}</span>;
+  return <span className={cn("inline-flex items-center gap-1.5 whitespace-nowrap rounded-md px-2 py-0.5 text-[11px] font-medium", className)}>{children}</span>;
 }

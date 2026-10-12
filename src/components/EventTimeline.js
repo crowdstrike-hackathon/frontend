@@ -16,12 +16,12 @@ export default function EventTimeline({ events, narrative, trusted, suspected, r
   return (
     <Panel
       className="h-full"
-      icon={<Radio className="h-4 w-4 text-rose-600" />}
+      icon={<Radio className="h-4 w-4 text-slate-500" />}
       title="Live telemetry"
       right={
         <>
           {running && (
-            <Chip className="bg-rose-500/10 text-rose-600">
+            <Chip className="bg-rose-500/10 text-rose-400">
               <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-rose-500" /> streaming
             </Chip>
           )}
@@ -35,7 +35,7 @@ export default function EventTimeline({ events, narrative, trusted, suspected, r
             key={narrative}
             initial={{ opacity: 0, y: -6 }}
             animate={{ opacity: 1, y: 0 }}
-            className="mx-5 mb-2 flex items-start gap-2 rounded-2xl bg-rose-500/10 px-4 py-2.5 text-[13px] leading-relaxed text-rose-700"
+            className="mx-4 mb-2 flex items-start gap-2 mt-3 rounded-lg bg-rose-500/10 px-4 py-2.5 text-[13px] leading-relaxed text-rose-300"
           >
             <span className="shrink-0 whitespace-nowrap font-semibold">Red move</span>
             <span>{narrative}</span>
@@ -44,7 +44,7 @@ export default function EventTimeline({ events, narrative, trusted, suspected, r
       </AnimatePresence>
 
       {events.length === 0 ? (
-        <Empty icon={CloudOff}>Clear skies. Launch a scenario and red's activity will stream in here.</Empty>
+        <Empty icon={CloudOff}>Launch a scenario and the logs will stream in here.</Empty>
       ) : (
         <ul ref={scrollRef} className="scrollbar-thin min-h-0 flex-1 overflow-y-auto pb-2">
           <AnimatePresence initial={false}>
@@ -60,7 +60,7 @@ export default function EventTimeline({ events, narrative, trusted, suspected, r
                   initial={{ opacity: 0, y: 8 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.25 }}
-                  className="flex gap-3 border-t border-slate-900/5 px-5 py-3 transition-colors hover:bg-white/60"
+                  className="flex gap-3 border-t border-white/[0.06] px-4 py-3 transition-colors hover:bg-white/[0.03]"
                 >
                   <div className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-xl" style={{ background: `${color}1f`, color }}>
                     <Icon className="h-4 w-4" />
@@ -68,13 +68,13 @@ export default function EventTimeline({ events, narrative, trusted, suspected, r
                   <div className="min-w-0 flex-1">
                     <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-[11px]">
                       <span className="font-semibold uppercase tracking-wide" style={{ color }}>{e.severity}</span>
-                      <span className="uppercase tracking-wide text-slate-500">{e.domain}</span>
-                      {e.attack_id && e.attack_id !== "DECEPTION" && <span className="font-mono text-slate-500">{e.attack_id}</span>}
-                      {isTrusted && <Chip className="ml-auto bg-sky-500/10 py-0.5 text-sky-700">trusted by blue</Chip>}
-                      {isSuspect && <Chip className="ml-auto bg-amber-500/15 py-0.5 text-amber-700">flagged as decoy</Chip>}
+                      <span className="uppercase tracking-wide text-slate-400">{e.domain}</span>
+                      {e.attack_id && e.attack_id !== "DECEPTION" && <span className="font-mono text-slate-400">{e.attack_id}</span>}
+                      {isTrusted && <Chip className="ml-auto bg-sky-500/10 py-0.5 text-sky-300">trusted by blue</Chip>}
+                      {isSuspect && <Chip className="ml-auto bg-amber-500/15 py-0.5 text-amber-300">flagged as decoy</Chip>}
                     </div>
-                    <p className={cn("mt-0.5 text-sm leading-snug", isSuspect ? "text-slate-500" : "text-slate-900")}>{e.message}</p>
-                    <p className="mt-0.5 truncate font-mono text-[11px] text-slate-500">{[e.source, e.actor, e.host].filter(Boolean).join(" · ")}</p>
+                    <p className={cn("mt-0.5 text-sm leading-snug", isSuspect ? "text-slate-400" : "text-slate-100")}>{e.message}</p>
+                    <p className="mt-0.5 truncate font-mono text-[11px] text-slate-400">{[e.source, e.actor, e.host].filter(Boolean).join(" · ")}</p>
                   </div>
                 </motion.li>
               );

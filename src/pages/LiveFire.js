@@ -1,38 +1,15 @@
 import React, { useEffect, useRef, useState } from "react";
 import toast from "react-hot-toast";
-import { Crosshair, Play, ShieldCheck, ShieldOff, Loader2 } from "lucide-react";
+import { Play, ShieldCheck, ShieldOff, Loader2 } from "lucide-react";
 import { api } from "../api";
-import { FROSTED_GLASS } from "../components/Sky";
+import { Page, PageHeader, Segmented, BTN_PRIMARY } from "../components/Sky";
 import TicketComposer from "../components/TicketComposer";
 import AgentTrace from "../components/AgentTrace";
 import VerdictHero from "../components/VerdictHero";
 import ApprovalQueue from "../components/ApprovalQueue";
-import { cn } from "../lib/utils";
 
 const HINTS = ["ignore", "disregard", "override", "admin mode", "debug mode", "get_secret", "prod/aws", "api key", "access key", "exfiltrate", "pre-authorized", "you are now", "forward the", "quote the"];
 const looksPoisoned = (t) => HINTS.some((h) => (t || "").toLowerCase().includes(h));
-
-function DefenseToggle({ defense, setDefense, disabled }) {
-  const base = "flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold transition";
-  return (
-    <div className="flex items-center gap-1 rounded-full border border-slate-300 bg-white/70 p-1">
-      <button
-        disabled={disabled}
-        onClick={() => setDefense(false)}
-        className={cn(base, !defense ? "bg-rose-600 text-white shadow" : "text-slate-500 hover:text-slate-700", disabled && "opacity-60")}
-      >
-        <ShieldOff className="h-4 w-4" /> Off
-      </button>
-      <button
-        disabled={disabled}
-        onClick={() => setDefense(true)}
-        className={cn(base, defense ? "bg-emerald-600 text-white shadow" : "text-slate-500 hover:text-slate-700", disabled && "opacity-60")}
-      >
-        <ShieldCheck className="h-4 w-4" /> On
-      </button>
-    </div>
-  );
-}
 
 export default function LiveFire() {
   const [tickets, setTickets] = useState([]);
@@ -117,34 +94,26 @@ export default function LiveFire() {
   };
 
   return (
-    <div className="scrollbar-thin flex h-full flex-col gap-4 overflow-y-auto px-4 pb-6 pt-3 md:px-6">
-      <header className={cn(FROSTED_GLASS, "flex flex-wrap items-center gap-4 px-5 py-4")}>
-        <div className="flex items-center gap-3">
-          <div className="grid h-10 w-10 place-items-center rounded-2xl bg-sky-600/10 text-sky-700">
-            <Crosshair className="h-5 w-5" />
-          </div>
-          <div>
-            <h1 className="text-lg font-bold tracking-tight text-slate-900">Live Fire</h1>
-            <p className="text-xs text-slate-500">Send a poisoned ticket to Nova. Flip the shield and watch the difference.</p>
-          </div>
-        </div>
-        <div className="ml-auto flex items-center gap-3">
-          <DefenseToggle defense={defense} setDefense={setDefense} disabled={running} />
-          <button
-            onClick={run}
-            disabled={running || (!selected && !body)}
-            className="flex items-center gap-2 rounded-full bg-slate-900 px-5 py-2.5 text-sm font-semibold text-white shadow-md transition hover:bg-slate-800 disabled:opacity-60"
-          >
-            {running ? <Loader2 className="h-4 w-4 animate-spin" /> : <Play className="h-4 w-4" />} Run ticket
-          </button>
-        </div>
-      </header>
+    <Page>
+      <PageHeader title="Live Fire" subtitle="Send one poisoned support ticket to Nova. Run it with the shield off, then on, and compare.">
+        <Segmented
+          value={defense}
+          onChange={setDefense}
+          disabled={running}
+          options={[
+            { value: false, label: "Shield off", icon: ShieldOff, activeClass: "bg-rose-500/20 text-rose-200" },
+            { value: true, label: "Shield on", icon: ShieldCheck, activeClass: "bg-emerald-500/20 text-emerald-200" },
+          ]}
+        />
+        <button onClick={run} disabled={running || (!selected && !body)} className={BTN_PRIMARY}>
+          {running ? <Loader2 className="h-4 w-4 animate-spin" /> : <Play className="h-4 w-4" />} Run ticket
+        </button>
+      </PageHeader>
 
       <VerdictHero outcome={outcome} running={running} defense={defense} />
 
-      <div className="grid gap-4 lg:grid-cols-2">
+      <div className="grid min-h-[30rem] flex-1 gap-5 lg:grid-cols-2">
         <TicketComposer
-          className="h-[30rem]"
           tickets={tickets}
           value={selected}
           onPick={pick}
@@ -156,12 +125,10 @@ export default function LiveFire() {
           technique={technique}
           disabled={running}
         />
-        <AgentTrace className="h-[30rem]" steps={steps} decisions={decisions} finalAnswer={finalAnswer} running={running} />
+        <AgentTrace className="max-h-[calc(100vh-15rem)]" steps={steps} decisions={decisions} finalAnswer={finalAnswer} running={running} />
       </div>
 
-      {outcome === "blocked" && actions.length > 0 && (
-        <ApprovalQueue actions={actions} onDecide={decide} className="min-h-[14rem]" />
-      )}
-    </div>
+      {outcome === "blocked" && actions.length > 0 && <ApprovalQueue actions={actions} onDecide={decide} />}
+    </Page>
   );
 }

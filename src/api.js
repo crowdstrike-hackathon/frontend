@@ -71,4 +71,9 @@ export const api = {
   getConnection: () => request("/api/settings/connection"),
   putConnection: (body) => request("/api/settings/connection", { method: "PUT", body }),
   testConnection: (body) => request("/api/settings/connection/test", { method: "POST", body }),
+
+  scanCode: (body = { use_sample: true }) => request("/api/agent/scan", { method: "POST", body }),
+  consoleState: () => request("/api/console/state"),
+  consoleMessage: (text) => request("/api/console/message", { method: "POST", body: { text } }),
+  consoleStream: () => new EventSource(`${BASE}/api/console/stream?token=${encodeURIComponent(getToken() || "")}`),
 };

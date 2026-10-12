@@ -5,8 +5,8 @@ import { NumberTicker } from "../ui/aceternity";
 import { CLEAR_GLASS, Chip } from "./Sky";
 import { cn } from "../lib/utils";
 
-const PRIMARY = "flex h-11 items-center justify-center gap-2 rounded-full bg-white px-6 text-sm font-semibold text-sky-700 shadow-lg transition hover:-translate-y-0.5 disabled:translate-y-0 disabled:opacity-50";
-const SECONDARY = "flex h-11 items-center justify-center gap-2 rounded-full border border-white/40 bg-white/10 px-6 text-sm font-semibold text-white backdrop-blur-sm transition hover:bg-white/20 disabled:opacity-50";
+const PRIMARY = "flex h-9 items-center justify-center gap-2 rounded-lg bg-white px-4 text-sm font-semibold text-black transition hover:bg-slate-200 disabled:opacity-50";
+const SECONDARY = "flex h-9 items-center justify-center gap-2 rounded-lg border border-white/15 px-4 text-sm font-medium text-slate-200 transition hover:bg-white/[0.06] disabled:opacity-50";
 
 // The strip across the top of the dashboard: what is being attacked, how far along it is, and who is winning.
 export default function Deck({ meta, scenarios, selected, onSelect, started, busy, running, onLaunch, onStep, onRun, turn, score }) {
@@ -34,7 +34,7 @@ export default function Deck({ meta, scenarios, selected, onSelect, started, bus
 
         {!started ? (
           <>
-            <h1 className="mt-2 text-2xl font-semibold tracking-tight">Choose an attack to run</h1>
+            <h1 className="mt-2 text-[22px] font-semibold tracking-tight">Choose a scenario</h1>
             <div role="radiogroup" aria-label="Attack scenario" className="mt-4 grid gap-3 md:grid-cols-3">
               {scenarios.map((s) => {
                 const active = selected === s.id;
@@ -45,13 +45,13 @@ export default function Deck({ meta, scenarios, selected, onSelect, started, bus
                     aria-checked={active}
                     onClick={() => onSelect(s.id)}
                     className={cn(
-                      "rounded-2xl border p-4 text-left transition",
-                      active ? "border-white bg-white text-slate-900 shadow-lg" : "border-white/25 bg-white/5 text-white hover:bg-white/15"
+                      "rounded-xl border p-4 text-left transition",
+                      active ? "border-white/40 bg-white/[0.08] text-white" : "border-white/[0.08] text-slate-300 hover:bg-white/[0.04]"
                     )}
                   >
                     <div className="text-sm font-semibold">{s.name}</div>
-                    <div className={cn("mt-1 line-clamp-2 text-xs leading-relaxed", active ? "text-slate-600" : "text-white/75")}>{s.description}</div>
-                    <div className={cn("mt-2 font-mono text-[10px] uppercase tracking-wide", active ? "text-sky-700" : "text-white/60")}>{s.stages} stages · MITRE ATT&CK</div>
+                    <div className={cn("mt-1 line-clamp-2 text-xs leading-relaxed", active ? "text-slate-300" : "text-slate-500")}>{s.description}</div>
+                    <div className={cn("mt-2 font-mono text-[10px] uppercase tracking-wide", active ? "text-sky-300" : "text-slate-600")}>{s.stages} stages · MITRE ATT&CK</div>
                   </button>
                 );
               })}
@@ -88,7 +88,7 @@ export default function Deck({ meta, scenarios, selected, onSelect, started, bus
         </div>
       </div>
 
-      <aside className="min-w-0 border-t border-white/20 pt-5 lg:border-l lg:border-t-0 lg:pl-6 lg:pt-0">
+      <aside className="min-w-0 border-t border-white/[0.08] pt-5 lg:border-l lg:border-t-0 lg:pl-6 lg:pt-0">
         {score ? <Score score={score} /> : meta ? <Target env={meta.environment} /> : null}
       </aside>
     </section>
@@ -133,7 +133,7 @@ function Score({ score }) {
         </div>
       </div>
       <div className="mt-4 flex h-2 gap-1">
-        <motion.div initial={{ width: "50%" }} animate={{ width: `${bluePct}%` }} transition={{ type: "spring", stiffness: 120, damping: 20 }} className="rounded-full bg-sky-200" />
+        <motion.div initial={{ width: "50%" }} animate={{ width: `${bluePct}%` }} transition={{ type: "spring", stiffness: 120, damping: 20 }} className="rounded-full bg-sky-400" />
         <div className="flex-1 rounded-full bg-rose-400" />
       </div>
       <div className="mt-4 flex flex-wrap gap-1.5">

@@ -1,7 +1,7 @@
 import React, { Suspense, useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { motion, useInView } from "framer-motion";
-import { ArrowRight, Check, X, Crosshair, Brain, ShieldCheck, EyeOff, Gauge, Radio } from "lucide-react";
+import { ArrowRight, ArrowUp, Check, X, Crosshair, Brain, ShieldCheck, EyeOff, Gauge, MessageSquare, Swords, Clock, Terminal } from "lucide-react";
 import {
   CloudShader,
   TextFlippingBoard,
@@ -15,6 +15,7 @@ import {
   NumberTicker,
 } from "../ui/aceternity";
 import SiteNav from "../components/SiteNav";
+import { LogoMark } from "../ui/Logo";
 import { useAuth } from "../context/AuthContext";
 import { avatar } from "../lib/avatars";
 import { BOARD_FRAMES, DUSK, GLOBE_PINS, TECHS } from "../lib/content";
@@ -41,12 +42,18 @@ const NAV = [
   { name: "Techniques", link: "#techniques" },
 ];
 
-const PREVIEW_EVENTS = [
-  { sev: "#64748b", domain: "email", id: "T1566.002", msg: "Inbound support ticket created from an external sender", meta: "zendesk · unknown sender" },
-  { sev: "#d97706", domain: "identity", id: "T1078", msg: "Assistant service account requested a production data role", meta: "okta · svc-nova-assistant", trusted: true },
-  { sev: "#94a3b8", domain: "endpoint", msg: "Scheduled antivirus definition update completed", meta: "falcon · fin-lt-0412", decoy: true },
-  { sev: "#e11d48", domain: "cloud", id: "T1552.005", msg: "Secret read by a role that has never touched it before", meta: "cloudtrail · prod-data-reader", trusted: true },
-  { sev: "#ca8a04", domain: "network", id: "T1530", msg: "Outbound TLS session to a previously unseen ASN", meta: "vpc-flow · nova-worker-3" },
+const PREVIEW_NAV = [
+  { label: "Console", icon: MessageSquare, active: true },
+  { label: "Live Fire", icon: Crosshair },
+  { label: "Red Team", icon: Swords },
+  { label: "History", icon: Clock },
+];
+
+const PREVIEW_ACTIVITY = [
+  { icon: ShieldCheck, tone: "text-emerald-400", title: "Blocked: credential access", detail: "get_secret called from a tainted ticket", id: "T1552.005" },
+  { icon: Crosshair, tone: "text-rose-400", title: "Prompt injection detected", detail: "Ticket TK-2087 tries to override instructions", id: "T1566.002" },
+  { icon: Terminal, tone: "text-slate-400", title: "Nova called search_kb", detail: "No exact article found" },
+  { icon: Crosshair, tone: "text-rose-400", title: "Inbound ticket TK-2087", detail: "URGENT: account verification required" },
 ];
 
 function Hero({ appHref, signedIn }) {
@@ -58,7 +65,7 @@ function Hero({ appHref, signedIn }) {
       <SiteNav
         links={NAV}
         lightOver="hero"
-        actions={signedIn ? [{ label: "Open dashboard", to: "/dashboard" }] : [{ label: "Sign in", to: "/login", secondary: true }, { label: "Open dashboard", to: appHref }]}
+        actions={signedIn ? [{ label: "Open dashboard", to: "/console" }] : [{ label: "Sign in", to: "/login", secondary: true }, { label: "Open dashboard", to: appHref }]}
       />
 
       <div className="relative z-10 mx-auto flex max-w-4xl flex-col items-center px-4 pt-28 text-center md:pt-36">
@@ -80,7 +87,7 @@ function Hero({ appHref, signedIn }) {
       </div>
 
       <div className="relative z-10 mx-auto mt-12 w-full max-w-6xl px-4 pb-4 md:mt-16 md:px-8">
-        <div className="rounded-2xl border border-white/30 bg-white/20 p-2 shadow-2xl backdrop-blur-md md:rounded-[2rem] md:p-3">
+        <div className="rounded-2xl border border-white/30 bg-white/20 p-1.5 shadow-2xl backdrop-blur-md md:rounded-[1.9rem] md:p-2">
           <DashboardPreview />
         </div>
       </div>
@@ -90,62 +97,73 @@ function Hero({ appHref, signedIn }) {
 
 function DashboardPreview() {
   return (
-    <div className="grid grid-cols-1 gap-3 rounded-xl border border-black/5 bg-slate-50 p-3 text-left shadow-lg md:grid-cols-[1fr_280px] md:rounded-3xl md:p-4">
-      <div className="min-w-0 rounded-2xl border border-slate-200 bg-white">
-        <div className="flex items-center gap-2 border-b border-slate-100 px-4 py-3">
-          <Radio className="h-4 w-4 text-rose-600" />
-          <span className="text-sm font-semibold text-slate-900">Live telemetry</span>
-          <span className="ml-auto flex items-center gap-1.5 text-xs text-rose-600">
-            <span className="h-2 w-2 animate-pulse rounded-full bg-rose-500" /> streaming
-          </span>
+    <div className="grid overflow-hidden rounded-xl border border-white/10 bg-[#0a0e14] text-left shadow-lg md:grid-cols-[170px_minmax(0,1fr)_250px] md:rounded-3xl">
+      <div className="hidden flex-col border-r border-white/[0.07] bg-[#0b0f16] p-3 md:flex">
+        <div className="flex items-center gap-2 px-2 pb-4 pt-1">
+          <LogoMark size={20} />
+          <span className="text-[13px] font-semibold text-white">Riposte</span>
         </div>
-        <div className="space-y-1.5 p-3">
-          <div className="rounded-lg border border-rose-500/20 bg-rose-500/5 px-3 py-2 font-mono text-xs text-rose-700">
-            <span className="font-bold">RED ▸</span> Turn 2 · using the stolen role to read the database secret
-          </div>
-          {PREVIEW_EVENTS.map((e) => (
-            <div
-              key={e.msg}
-              className="flex gap-3 rounded-xl border border-slate-100 bg-slate-50/60 px-3 py-2"
-              style={{ borderLeft: `2px solid ${e.trusted ? "#0284c7" : "transparent"}`, opacity: e.decoy ? 0.6 : 1 }}
-            >
-              <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full" style={{ background: e.sev }} />
-              <div className="min-w-0 flex-1">
-                <div className="flex items-center gap-2">
-                  <span className="rounded px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-slate-500 ring-1 ring-slate-200">{e.domain}</span>
-                  {e.id && <span className="font-mono text-[10px] text-rose-600/80">{e.id}</span>}
-                  {e.decoy && <span className="ml-auto font-mono text-[10px] text-amber-600">⚑ flagged deception</span>}
-                </div>
-                <p className="mt-1 truncate text-[13px] text-slate-800">{e.msg}</p>
-                <p className="truncate font-mono text-[11px] text-slate-400">{e.meta}</p>
-              </div>
+        {PREVIEW_NAV.map((n) => {
+          const Icon = n.icon;
+          return (
+            <div key={n.label} className={`mb-0.5 flex items-center gap-2.5 rounded-lg px-2.5 py-1.5 text-[12.5px] ${n.active ? "bg-white/[0.08] font-medium text-white" : "text-slate-400"}`}>
+              <Icon className="h-3.5 w-3.5" /> {n.label}
             </div>
-          ))}
+          );
+        })}
+      </div>
+
+      <div className="flex min-w-0 flex-col gap-4 p-5 md:p-6">
+        <div className="flex justify-end">
+          <div className="rounded-2xl bg-white/[0.08] px-3.5 py-2 text-[13px] text-slate-100">Replay the injection attack</div>
+        </div>
+        <div className="flex gap-2.5">
+          <span className="mt-0.5 grid h-6 w-6 shrink-0 place-items-center rounded-md bg-white/[0.06] ring-1 ring-white/10"><LogoMark size={14} /></span>
+          <p className="text-[13px] leading-relaxed text-slate-200">
+            <strong className="font-semibold text-white">Attack blocked.</strong> Ticket TK-2087 carried an indirect prompt injection. Riposte stopped Nova before any secret left the environment and queued the containment action for your approval.
+          </p>
+        </div>
+        <div className="flex justify-end">
+          <div className="rounded-2xl bg-white/[0.08] px-3.5 py-2 text-[13px] text-slate-100">Run a red team</div>
+        </div>
+        <div className="flex gap-2.5">
+          <span className="mt-0.5 grid h-6 w-6 shrink-0 place-items-center rounded-md bg-white/[0.06] ring-1 ring-white/10"><LogoMark size={14} /></span>
+          <p className="text-[13px] leading-relaxed text-slate-200">
+            Campaign finished. Riposte caught <strong className="font-semibold text-white">15 of 17 attacks (88%)</strong>; a keyword guardrail caught 10.
+          </p>
+        </div>
+        <div className="mt-auto flex items-center gap-2 rounded-xl border border-white/10 bg-white/[0.04] px-3 py-2.5">
+          <span className="flex-1 text-[13px] text-slate-500">Ask the blue team what is happening…</span>
+          <span className="grid h-6 w-6 place-items-center rounded-md bg-white text-black"><ArrowUp className="h-3.5 w-3.5" /></span>
         </div>
       </div>
 
-      <div className="hidden flex-col gap-3 md:flex">
-        <div className="rounded-2xl border border-slate-200 bg-white p-4">
-          <div className="text-[11px] uppercase tracking-wide text-slate-400">Scoreboard</div>
-          <div className="mt-2 flex items-end justify-between">
-            <span className="text-3xl font-bold text-sky-600"><NumberTicker value={34} /></span>
-            <span className="text-3xl font-bold text-rose-600"><NumberTicker value={21} /></span>
-          </div>
-          <div className="mt-3 h-2 overflow-hidden rounded-full bg-rose-500/40">
-            <div className="h-full w-[62%] rounded-full bg-sky-500" />
+      <div className="hidden flex-col gap-2.5 border-l border-white/[0.07] p-3 md:flex">
+        <div className="flex items-center gap-2.5 rounded-lg border border-emerald-400/25 bg-emerald-400/[0.06] px-3 py-2">
+          <ShieldCheck className="h-4 w-4 text-emerald-400" />
+          <span className="text-[12.5px] font-semibold text-white">Shield on</span>
+        </div>
+        <div className="rounded-lg border border-amber-400/20 bg-amber-400/[0.06] p-2.5">
+          <div className="text-[12px] font-semibold text-slate-100">Hold get_secret</div>
+          <div className="mt-2 flex gap-1.5">
+            <span className="flex flex-1 items-center justify-center gap-1 rounded-md bg-white py-1 text-[11px] font-semibold text-black"><Check className="h-3 w-3" /> Approve</span>
+            <span className="flex flex-1 items-center justify-center gap-1 rounded-md border border-white/15 py-1 text-[11px] font-semibold text-slate-300"><X className="h-3 w-3" /> Deny</span>
           </div>
         </div>
-        <div className="rounded-2xl border border-slate-200 bg-white p-4">
-          <span className="rounded-md bg-rose-500/10 px-2 py-0.5 text-[10px] font-bold text-rose-600 ring-1 ring-rose-500/40">MALICIOUS</span>
-          <div className="mt-2 text-[13px] font-semibold text-slate-900">Credential access chained from a poisoned ticket</div>
-          <p className="mt-1 text-[12px] leading-relaxed text-slate-500">Secret read and egress from the same worker. The antivirus update is noise.</p>
-        </div>
-        <div className="rounded-2xl border border-slate-200 bg-white p-4">
-          <div className="text-[13px] font-semibold text-slate-900">Revoke assistant sessions</div>
-          <div className="mt-3 flex gap-2">
-            <span className="flex flex-1 items-center justify-center gap-1.5 rounded-lg bg-emerald-500/15 py-1.5 text-xs font-semibold text-emerald-700"><Check className="h-3.5 w-3.5" /> Approve</span>
-            <span className="flex flex-1 items-center justify-center gap-1.5 rounded-lg bg-slate-100 py-1.5 text-xs font-semibold text-slate-500"><X className="h-3.5 w-3.5" /> Deny</span>
-          </div>
+        <div className="rounded-lg border border-white/[0.08] bg-white/[0.02] p-2">
+          <div className="px-1 pb-1.5 text-[10px] font-semibold uppercase tracking-wide text-slate-500">Live activity</div>
+          {PREVIEW_ACTIVITY.map((a) => {
+            const Icon = a.icon;
+            return (
+              <div key={a.title} className="flex gap-2 px-1 py-1.5">
+                <Icon className={`mt-0.5 h-3.5 w-3.5 shrink-0 ${a.tone}`} />
+                <div className="min-w-0">
+                  <div className="truncate text-[11.5px] font-medium text-slate-200">{a.title}</div>
+                  <div className="truncate text-[10.5px] text-slate-500">{a.detail}</div>
+                </div>
+              </div>
+            );
+          })}
         </div>
       </div>
     </div>

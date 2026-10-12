@@ -89,7 +89,7 @@ export default function Dashboard() {
   const trusted = new Set(last ? last.trusted_event_ids : []);
   const suspected = new Set(last ? last.suspected_decoy_ids : []);
   return (
-    <div className="scrollbar-thin flex h-full flex-col gap-4 overflow-y-auto px-4 pb-6 pt-3 md:px-6 lg:overflow-hidden">
+    <div className="scrollbar-thin flex h-full flex-col gap-5 overflow-y-auto px-6 pb-8 pt-8 lg:px-10 lg:overflow-hidden">
       <Deck
         meta={meta}
         scenarios={meta?.scenarios || []}
@@ -105,11 +105,11 @@ export default function Dashboard() {
         score={score}
       />
 
-      <div className="grid gap-4 lg:min-h-0 lg:flex-1 lg:grid-cols-[minmax(0,1fr)_400px]">
+      <div className="grid gap-5 lg:min-h-0 lg:flex-1 lg:grid-cols-[minmax(0,1fr)_400px]">
         <div className="h-[32rem] lg:h-auto lg:min-h-0">
           <EventTimeline events={events} narrative={narrative} trusted={trusted} suspected={suspected} running={running} />
         </div>
-        <div className="grid gap-4 lg:min-h-0 lg:grid-rows-2">
+        <div className="grid gap-5 lg:min-h-0 lg:grid-rows-2">
           <ApprovalQueue actions={actions} onDecide={decide} className="h-80 lg:h-auto" />
           <InvestigationFeed investigations={investigations} className="h-80 lg:h-auto" />
         </div>

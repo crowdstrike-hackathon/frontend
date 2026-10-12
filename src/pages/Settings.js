@@ -1,20 +1,19 @@
 import React, { useCallback, useEffect, useState } from "react";
 import toast from "react-hot-toast";
-import { Settings as SettingsIcon, ShieldCheck, Swords, Save, Plug, CheckCircle2, XCircle, Loader2, Lock } from "lucide-react";
+import { ShieldCheck, Swords, Save, Plug, CheckCircle2, XCircle, Loader2, Info } from "lucide-react";
 import { api } from "../api";
-import { Panel, FROSTED_GLASS, Chip } from "../components/Sky";
-import { cn } from "../lib/utils";
+import { Panel, Chip, Page, PageHeader, Segmented, BTN_PRIMARY, BTN_SECONDARY, INPUT } from "../components/Sky";
 
 function Field({ label, type = "text", value, onChange, placeholder }) {
   return (
     <label className="block">
-      <span className="mb-1 block text-[11px] font-semibold uppercase tracking-wide text-slate-500">{label}</span>
+      <span className="mb-1 block text-xs font-medium text-slate-400">{label}</span>
       <input
         type={type}
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
-        className="w-full rounded-xl border border-slate-300 bg-white/80 px-3 py-2 text-sm text-slate-800 outline-none focus:border-sky-500"
+        className={INPUT}
       />
     </label>
   );
@@ -22,15 +21,15 @@ function Field({ label, type = "text", value, onChange, placeholder }) {
 
 function ConnectionCard({ icon, title, blurb, side, onChange, hasKey, result }) {
   return (
-    <Panel icon={icon} title={title} right={result ? (result.ok ? <Chip className="bg-emerald-500/15 text-emerald-700"><CheckCircle2 className="h-3 w-3" /> {result.latency_ms}ms</Chip> : <Chip className="bg-rose-500/15 text-rose-700"><XCircle className="h-3 w-3" /> failed</Chip>) : null}>
-      <div className="flex flex-col gap-3 px-5 pb-5">
-        <p className="text-[12.5px] leading-relaxed text-slate-500">{blurb}</p>
+    <Panel icon={icon} title={title} right={result ? (result.ok ? <Chip className="bg-emerald-500/15 text-emerald-300"><CheckCircle2 className="h-3 w-3" /> {result.latency_ms}ms</Chip> : <Chip className="bg-rose-500/15 text-rose-300"><XCircle className="h-3 w-3" /> failed</Chip>) : null}>
+      <div className="flex flex-col gap-3.5 p-4">
+        <p className="text-[12.5px] leading-relaxed text-slate-400">{blurb}</p>
         <label className="block">
-          <span className="mb-1 block text-[11px] font-semibold uppercase tracking-wide text-slate-500">Provider</span>
+          <span className="mb-1 block text-xs font-medium text-slate-400">Provider</span>
           <select
             value={side.kind}
             onChange={(e) => onChange("kind", e.target.value)}
-            className="w-full rounded-xl border border-slate-300 bg-white/80 px-3 py-2 text-sm text-slate-800 outline-none focus:border-sky-500"
+            className={INPUT}
           >
             <option value="openai">Local / OpenAI-compatible (vLLM, A100)</option>
             <option value="anthropic">Anthropic (Claude)</option>
@@ -47,7 +46,7 @@ function ConnectionCard({ icon, title, blurb, side, onChange, hasKey, result }) 
           onChange={(v) => onChange("api_key", v)}
           placeholder={hasKey ? "••••••••" : "sk-… (optional for local)"}
         />
-        {result && !result.ok && <p className="break-words text-[11px] text-rose-600">{result.error}</p>}
+        {result && !result.ok && <p className="break-words text-[11px] text-rose-400">{result.error}</p>}
       </div>
     </Panel>
   );
@@ -109,60 +108,52 @@ export default function Settings() {
     }
   };
 
-  const base = "flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold transition";
-
   return (
-    <div className="scrollbar-thin flex h-full flex-col gap-4 overflow-y-auto px-4 pb-6 pt-3 md:px-6">
-      <header className={cn(FROSTED_GLASS, "flex flex-wrap items-center gap-4 px-5 py-4")}>
-        <div className="flex items-center gap-3">
-          <div className="grid h-10 w-10 place-items-center rounded-2xl bg-slate-900/5 text-slate-700">
-            <SettingsIcon className="h-5 w-5" />
-          </div>
-          <div>
-            <h1 className="text-lg font-bold tracking-tight text-slate-900">Connections</h1>
-            <p className="text-xs text-slate-500">Point Riposte at your own models. Red and blue can both run on-prem — nothing leaves your VPC.</p>
-          </div>
-        </div>
-        <div className="ml-auto flex items-center gap-3">
-          <div className="flex items-center gap-1 rounded-full border border-slate-300 bg-white/70 p-1">
-            <button onClick={() => setForm((f) => ({ ...f, sim_mode: "mock" }))} className={cn(base, form.sim_mode === "mock" ? "bg-slate-900 text-white shadow" : "text-slate-500")}>Mock</button>
-            <button onClick={() => setForm((f) => ({ ...f, sim_mode: "live" }))} className={cn(base, form.sim_mode === "live" ? "bg-sky-600 text-white shadow" : "text-slate-500")}>Live</button>
-          </div>
-          <button onClick={test} disabled={testing} className="flex items-center gap-2 rounded-full border border-slate-300 bg-white/70 px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-white disabled:opacity-60">
-            {testing ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plug className="h-4 w-4" />} Test
-          </button>
-          <button onClick={save} disabled={busy} className="flex items-center gap-2 rounded-full bg-slate-900 px-5 py-2.5 text-sm font-semibold text-white shadow-md transition hover:bg-slate-800 disabled:opacity-60">
-            {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />} Save
-          </button>
-        </div>
-      </header>
+    <Page className="max-w-5xl">
+      <PageHeader title="Connections" subtitle="Point Riposte at your own models.">
+        <Segmented
+          value={form.sim_mode}
+          onChange={(v) => setForm((f) => ({ ...f, sim_mode: v }))}
+          options={[
+            { value: "mock", label: "Mock" },
+            { value: "live", label: "Live", activeClass: "bg-sky-500/25 text-sky-100" },
+          ]}
+        />
+        <button onClick={test} disabled={testing} className={BTN_SECONDARY}>
+          {testing ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plug className="h-4 w-4" />} Test
+        </button>
+        <button onClick={save} disabled={busy} className={BTN_PRIMARY}>
+          {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />} Save
+        </button>
+      </PageHeader>
 
       {form.sim_mode === "mock" && (
-        <div className="flex items-center gap-2 rounded-2xl border border-amber-300/60 bg-amber-50/80 px-4 py-3 text-[13px] text-amber-900">
-          <Lock className="h-4 w-4 shrink-0" /> Mock mode is on — Nova and the red team run on deterministic local logic, no credentials needed. Switch to Live once your A100 endpoints are set.
+        <div className="flex items-start gap-2.5 rounded-xl border border-white/[0.08] bg-white/[0.025] px-4 py-3 text-[13px] text-slate-400">
+          <Info className="mt-0.5 h-4 w-4 shrink-0 text-slate-500" />
+          <span><span className="font-medium text-slate-200">Mock mode.</span> Nova and the red team run on built-in deterministic logic, so no credentials are needed. Add your endpoints below and switch to Live to use real models.</span>
         </div>
       )}
 
-      <div className="grid gap-4 lg:grid-cols-2">
+      <div className="grid gap-5 lg:grid-cols-2">
         <ConnectionCard
-          icon={<ShieldCheck className="h-4 w-4 text-emerald-600" />}
-          title="Blue — Nova & guard"
-          blurb="The defended agent and Riposte's LLM judge. Use Claude, or your own local model to keep everything in-house."
+          icon={<ShieldCheck className="h-4 w-4 text-slate-500" />}
+          title="Blue model"
+          blurb="Runs Nova (the agent being defended) and the copilot. Use Claude, or a local model to keep everything in-house."
           side={form.blue}
           onChange={setSide("blue")}
           hasKey={hasKey.blue}
           result={result?.blue}
         />
         <ConnectionCard
-          icon={<Swords className="h-4 w-4 text-rose-600" />}
-          title="Red — uncensored adversary"
-          blurb="The local uncensored model that generates real attacks. This is the moat an aligned API can't provide."
+          icon={<Swords className="h-4 w-4 text-slate-500" />}
+          title="Red model"
+          blurb="The local uncensored model that writes the attacks. Any OpenAI-compatible endpoint works, such as vLLM on your A100."
           side={form.red}
           onChange={setSide("red")}
           hasKey={hasKey.red}
           result={result?.red}
         />
       </div>
-    </div>
+    </Page>
   );
 }

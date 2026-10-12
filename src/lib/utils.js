@@ -6,17 +6,17 @@ export function cn(...inputs) {
 }
 
 export const SEVERITY_COLOR = {
-  critical: "#e11d48",
-  high: "#d97706",
-  medium: "#ca8a04",
-  low: "#64748b",
-  info: "#94a3b8",
+  critical: "#fb7185",
+  high: "#fb923c",
+  medium: "#facc15",
+  low: "#94a3b8",
+  info: "#64748b",
 };
 
 export const VERDICT_STYLE = {
-  malicious: { text: "text-rose-600", ring: "ring-rose-500/40", bg: "bg-rose-500/10", label: "MALICIOUS" },
-  suspicious: { text: "text-amber-600", ring: "ring-amber-500/40", bg: "bg-amber-500/10", label: "SUSPICIOUS" },
-  benign: { text: "text-emerald-600", ring: "ring-emerald-500/40", bg: "bg-emerald-500/10", label: "BENIGN" },
+  malicious: { text: "text-rose-300", ring: "ring-rose-500/40", bg: "bg-rose-500/15", label: "MALICIOUS" },
+  suspicious: { text: "text-amber-300", ring: "ring-amber-500/40", bg: "bg-amber-500/15", label: "SUSPICIOUS" },
+  benign: { text: "text-emerald-300", ring: "ring-emerald-500/40", bg: "bg-emerald-500/15", label: "BENIGN" },
 };
 
 export const DOMAIN_ICON = {
