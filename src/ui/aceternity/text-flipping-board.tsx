@@ -27,14 +27,11 @@ type AccentColor = {
   text: string;
 };
 
+// Riposte palette: brand blue, sky and white flashes while a tile scrambles.
 const ACCENT_COLORS: AccentColor[] = [
-  { top: "bg-red-600", bottom: "bg-red-700", text: "text-white" },
-  { top: "bg-orange-500", bottom: "bg-orange-600", text: "text-white" },
-  { top: "bg-yellow-400", bottom: "bg-yellow-500", text: "text-neutral-900" },
-  { top: "bg-green-600", bottom: "bg-green-700", text: "text-white" },
-  { top: "bg-blue-600", bottom: "bg-blue-700", text: "text-white" },
-  { top: "bg-violet-600", bottom: "bg-violet-700", text: "text-white" },
-  { top: "bg-white", bottom: "bg-neutral-100", text: "text-neutral-900" },
+  { top: "bg-[#0369A1]", bottom: "bg-[#075985]", text: "text-white" },
+  { top: "bg-[#7DD3FC]", bottom: "bg-[#38BDF8]", text: "text-[#0B2A55]" },
+  { top: "bg-white", bottom: "bg-slate-100", text: "text-[#0B2A55]" },
 ];
 
 const CELL_TEXT_STYLE: React.CSSProperties = {
@@ -82,8 +79,8 @@ const FlapCell = React.memo(function FlapCell({
 
     const scrambleCount =
       normalized === " "
-        ? 8 + Math.floor(Math.random() * 8)
-        : 25 + Math.floor(Math.random() * 15);
+        ? 3 + Math.floor(Math.random() * 3)
+        : 6 + Math.floor(Math.random() * 5);
 
     const runStep = (i: number) => {
       const isLast = i === scrambleCount;
@@ -93,7 +90,7 @@ const FlapCell = React.memo(function FlapCell({
 
       const newAccent = isLast
         ? null
-        : Math.random() < 0.2
+        : Math.random() < 0.12
           ? ACCENT_COLORS[Math.floor(Math.random() * ACCENT_COLORS.length)]
           : null;
 
@@ -126,23 +123,23 @@ const FlapCell = React.memo(function FlapCell({
 
   const textCx =
     "absolute inset-x-0 flex select-none items-center justify-center font-mono font-bold tracking-wide";
-  const topBg = accent?.top ?? "bg-neutral-200/80 dark:bg-neutral-900";
-  const bottomBg = accent?.bottom ?? "bg-neutral-200/80 dark:bg-neutral-900";
+  const topBg = accent?.top ?? "bg-neutral-200/80 dark:bg-[#0E2A50]";
+  const bottomBg = accent?.bottom ?? "bg-neutral-200/80 dark:bg-[#0C2546]";
   const textColor = accent?.text ?? "text-neutral-800 dark:text-white";
 
-  const flapTopBg = prevAccent?.top ?? "bg-neutral-100 dark:bg-neutral-800";
+  const flapTopBg = prevAccent?.top ?? "bg-neutral-100 dark:bg-[#143765]";
   const flapTextColor = prevAccent?.text ?? "text-neutral-800 dark:text-white";
 
   const bottomDelay = flipDuration * 0.5;
 
   return (
-    <div className="flex aspect-[3/6] flex-col overflow-hidden rounded-[2px] border border-neutral-300 md:rounded-[3px] md:border-2 dark:border-black">
+    <div className="flex aspect-[3/6] flex-col overflow-hidden rounded-[2px] border border-neutral-300 md:rounded-[3px] md:border-2 dark:border-[#04122A]">
       {/* Flap content area */}
       <div className="relative flex-1 [perspective:100px] [transform-style:preserve-3d]">
         <div className="absolute inset-0 z-40 hidden flex-row items-center justify-center md:flex">
-          <div className="h-1/2 w-px rounded-tr-sm rounded-br-sm bg-neutral-300 dark:bg-black" />
-          <div className="flex h-px flex-1 bg-neutral-300 dark:bg-black" />
-          <div className="h-1/2 w-px rounded-tl-sm rounded-bl-sm bg-neutral-300 dark:bg-black" />
+          <div className="h-1/2 w-px rounded-tr-sm rounded-br-sm bg-neutral-300 dark:bg-[#04122A]" />
+          <div className="flex h-px flex-1 bg-neutral-300 dark:bg-[#04122A]" />
+          <div className="h-1/2 w-px rounded-tl-sm rounded-bl-sm bg-neutral-300 dark:bg-[#04122A]" />
         </div>
 
         {/* Static top – new character top half */}
@@ -249,11 +246,11 @@ const FlapCell = React.memo(function FlapCell({
         )}
 
         {/* Split line */}
-        <div className="pointer-events-none absolute inset-x-0 top-1/2 z-20 h-px -translate-y-[0.5px] bg-neutral-400/50 dark:bg-black/50" />
+        <div className="pointer-events-none absolute inset-x-0 top-1/2 z-20 h-px -translate-y-[0.5px] bg-neutral-400/50 dark:bg-[#04122A]/60" />
       </div>
 
       {/* Bottom stripes – decorative, outside the flap area */}
-      <div className="h-2 w-full bg-[repeating-linear-gradient(to_bottom,currentColor_0,currentColor_1px,transparent_1px,transparent_0.15rem)] [mask-image:linear-gradient(to_top,black_50%,transparent)] text-neutral-400 opacity-20 md:h-4 md:bg-[repeating-linear-gradient(to_bottom,currentColor_0,currentColor_1px,transparent_1px,transparent_0.2rem)] dark:text-black dark:opacity-100" />
+      <div className="h-2 w-full bg-[repeating-linear-gradient(to_bottom,currentColor_0,currentColor_1px,transparent_1px,transparent_0.15rem)] [mask-image:linear-gradient(to_top,black_50%,transparent)] text-neutral-400 opacity-20 md:h-4 md:bg-[repeating-linear-gradient(to_bottom,currentColor_0,currentColor_1px,transparent_1px,transparent_0.2rem)] dark:text-[#04122A] dark:opacity-100" />
     </div>
   );
 },
@@ -266,20 +263,21 @@ const FlapCell = React.memo(function FlapCell({
 
 // ── Color Tile ────────────────────────────────────────────────────────
 
+// Marker tiles in the console's own status colors.
 const COLOR_MAP: Record<string, string> = {
-  "{R}": "#D32F2F",
-  "{O}": "#F57C00",
-  "{Y}": "#FBC02D",
-  "{G}": "#43A047",
-  "{B}": "#1E88E5",
-  "{V}": "#8E24AA",
-  "{W}": "#FAFAFA",
+  "{R}": "#DC2626", // blocked
+  "{O}": "#EA580C",
+  "{Y}": "#F59E0B", // held for a person
+  "{G}": "#059669", // approved
+  "{B}": "#0369A1", // Riposte brand blue
+  "{V}": "#7C3AED",
+  "{W}": "#F8FAFC",
 };
 
 const ColorCell = React.memo(function ColorCell({ color }: { color: string }) {
   return (
     <div
-      className="min-w-0 rounded-[3px] border-2 border-neutral-300 dark:border-black"
+      className="min-w-0 rounded-[3px] border-2 border-neutral-300 dark:border-[#04122A]"
       style={{ backgroundColor: color }}
     />
   );
@@ -413,7 +411,7 @@ export function TextFlippingBoard({
   return (
     <div
       className={cn(
-        "relative mx-auto w-full max-w-3xl rounded-xl bg-neutral-100 p-2 shadow-xl md:rounded-2xl md:p-4 dark:bg-neutral-900 dark:shadow-[0_20px_70px_-15px_rgba(0,0,0,0.6)]",
+        "relative mx-auto w-full max-w-3xl rounded-xl bg-neutral-100 p-2 shadow-xl md:rounded-2xl md:p-4 dark:bg-[#071A33] dark:ring-1 dark:ring-[#13325C] dark:shadow-[0_20px_70px_-15px_rgba(7,26,51,0.65)]",
         className,
       )}
     >
