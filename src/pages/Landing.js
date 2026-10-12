@@ -51,7 +51,7 @@ function Hero({ appHref, signedIn }) {
             See how it works
           </a>
         </div>
-        <p className="mt-4 text-sm font-medium text-white [text-shadow:0_1px_3px_rgba(8,30,66,0.9),0_2px_18px_rgba(8,30,66,0.6)]">Runs on a local model &middot; nothing leaves your machine</p>
+        <p className="mt-4 text-sm font-medium text-white [text-shadow:0_1px_3px_rgba(8,30,66,0.9),0_2px_18px_rgba(8,30,66,0.6)]">Works with any model &middot; checks the action, not the wording</p>
       </div>
 
       <div className="relative z-10 mx-auto mt-12 w-full max-w-5xl px-4 pb-4 md:mt-16 md:px-8">

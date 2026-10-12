@@ -35,7 +35,7 @@ function ModelStatus({ agent }) {
   const hint = ok
     ? `The agent runs on ${agent.model} at ${agent.base_url}.`
     : agent.reachable
-    ? `Ollama is up but ${agent.model} is not pulled.`
+    ? `The endpoint at ${agent.base_url} answers, but it has no model named ${agent.model}.`
     : `Nothing is answering at ${agent.base_url}.`;
   return (
     <Tooltip>
