@@ -383,7 +383,7 @@ function SeeWhatHappened() {
     <section id="trace" className="scroll-mt-24 px-4 py-24 md:px-8 md:py-32">
       <SectionHeading
         eyebrow="Explainable"
-        sub="Every run draws itself: where each piece of information came from, what it made the agent do, and the sentence in the email that caused it."
+        sub="Where the data came from, where it went, and the sentence that caused it."
       >
         See exactly what happened
       </SectionHeading>
@@ -416,9 +416,9 @@ export default function Landing() {
 
       <Demo />
 
-      <SeeWhatHappened />
-
       <StatusBoard />
+
+      <SeeWhatHappened />
 
       <section id="why" className="scroll-mt-24 bg-gradient-to-b from-white to-sky-50 px-4 pb-24 md:pb-32">
         <SectionHeading eyebrow="Why" sub="An attacker can always find new words. They cannot change where a value came from.">
