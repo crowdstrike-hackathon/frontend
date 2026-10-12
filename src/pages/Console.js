@@ -59,7 +59,7 @@ function EmptyState() {
         Northwind is a made-up API company. Nova is its AI support agent, and it can read tickets, fetch customers' API keys, issue refunds and send email. Riposte is the firewall between Nova and those tools.
       </p>
       <p className="mt-2 max-w-xl text-[15px] leading-relaxed text-ink-3">
-        Open Mail to see what Nova wants to do with each email and what Riposte would allow, then hand it to Nova. Or chat with Nova here and type @ to bring in a ticket.
+        Open the Agent queue to see what Nova wants to do with each incoming email and what Riposte would allow, then hand it to Nova. Or chat with Nova here and type @ to bring in a ticket.
       </p>
     </div>
   );
@@ -109,7 +109,7 @@ export default function Console() {
         .filter((t) => t.kind === "inbound" && !seenInbound.current.has(t.id))
         .forEach((t) => toast((tt) => (
           <button className="text-left" onClick={() => { setView("mail"); toast.dismiss(tt.id); }}>
-            New email from {t.from}. <span className="font-medium underline">Open Mail</span>
+            New email from {t.from}. <span className="font-medium underline">Open the Agent queue</span>
           </button>
         ), { icon: "✉️" }));
     }
@@ -276,7 +276,7 @@ export default function Console() {
   const header = (
     <>
       <div role="tablist" aria-label="View" className="inline-flex shrink-0 rounded-full bg-paper-3 p-0.5">
-        {[["chat", "Chat"], ["mail", "Mail"]].map(([id, label]) => (
+        {[["chat", "Chat"], ["mail", "Agent queue"]].map(([id, label]) => (
           <button
             key={id}
             role="tab"

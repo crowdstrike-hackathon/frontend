@@ -43,7 +43,7 @@ export default function SendEmail({ onSent }) {
         <DialogHeader>
           <DialogTitle>Email Northwind support</DialogTitle>
           <DialogDescription>
-            This goes to the same public inbox as any customer email. Write as a customer, or try to trick Nova. Then open it in Mail and hand it to Nova.
+            This goes to the same public inbox as any customer email. Write as a customer, or try to trick Nova. It arrives in the Agent queue, where you can hand it to Nova.
           </DialogDescription>
         </DialogHeader>
         <div className="flex flex-col gap-2.5">

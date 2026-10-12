@@ -210,7 +210,7 @@ export default function MailView({ tickets, disabled, onHandle, onOpenChat, onCh
     <div className="flex min-h-0 flex-1 flex-col md:flex-row">
       <div className="flex max-h-[40vh] min-h-0 shrink-0 flex-col border-b border-line md:max-h-none md:w-[340px] md:border-b-0 md:border-r">
         <div className="flex items-center gap-1 px-3 pb-2 pt-3">
-          {[["open", "Inbox", open.length], ["done", "Done", done.length]].map(([id, label, count]) => (
+          {[["open", "Incoming", open.length], ["done", "Handled", done.length]].map(([id, label, count]) => (
             <button
               key={id}
               onClick={() => { setTab(id); setSelected(null); }}
@@ -221,9 +221,12 @@ export default function MailView({ tickets, disabled, onHandle, onOpenChat, onCh
           ))}
           <span className="ml-auto"><SendEmail onSent={onSent} /></span>
         </div>
+        <p className="px-4 pb-2 text-[11.5px] leading-snug text-ink-4">
+          Work coming in to Nova from Northwind's helpdesk, simulated for this demo. In production this comes from the client's own Gmail, Zendesk or ticketing system.
+        </p>
         <ul className="min-h-0 flex-1 overflow-y-auto px-2 pb-2">
           {!items.length && (
-            <li className="px-2 py-6 text-[13px] text-ink-3">{tab === "open" ? "The inbox is empty." : "Nothing handled yet."}</li>
+            <li className="px-2 py-6 text-[13px] text-ink-3">{tab === "open" ? "Nothing waiting." : "Nothing handled yet."}</li>
           )}
           {items.map((t) => {
             const active = current?.id === t.id;
@@ -322,7 +325,7 @@ export default function MailView({ tickets, disabled, onHandle, onOpenChat, onCh
           <div className="grid h-full place-items-center px-6 text-center text-[13.5px] text-ink-3">
             <div>
               <Inbox className="mx-auto mb-2 h-6 w-6 text-ink-4" />
-              {tab === "open" ? "Nothing waiting. Send Northwind an email to try one." : "Emails Nova has handled or you dismissed show up here."}
+              {tab === "open" ? "Nothing waiting. Send Northwind an email to try one." : "Work Nova has handled, or you dismissed, shows up here."}
             </div>
           </div>
         )}
