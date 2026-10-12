@@ -27,5 +27,6 @@ export const TECHS = [
   { quote: "A ticket asks for a refund far above what support can grant.", name: "Tool misuse", title: "Money moved without approval" },
   { quote: "Six refunds of $195 each, every one under the limit, together far above it.", name: "Split transactions", title: "Money moved in slices to dodge approval" },
   { quote: "The key is base64 encoded or split up so a text match will miss it.", name: "Encoded payloads", title: "Obfuscated secret in outgoing text" },
+  { quote: "A stranger asks for just the last 6 characters of a key, or a yes or no answer about it.", name: "Inference leak", title: "A reply that depends on a key it never contains" },
   { quote: "Instructions hidden in a polite request, with none of the usual trigger phrases.", name: "Indirect prompt injection", title: "Untrusted text steering tools" },
 ];
