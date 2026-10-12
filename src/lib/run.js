@@ -22,11 +22,11 @@ export const OUTCOME = {
 };
 
 export const TONE = {
-  rose: { bar: "border-l-red-700", text: "text-red-700", dot: "bg-red-600" },
-  emerald: { bar: "border-l-emerald-700", text: "text-emerald-700", dot: "bg-emerald-600" },
-  amber: { bar: "border-l-amber-600", text: "text-amber-700", dot: "bg-amber-500" },
-  sky: { bar: "border-l-ink-3", text: "text-ink", dot: "bg-ink-3" },
-  slate: { bar: "border-l-line-strong", text: "text-ink-3", dot: "bg-ink-4" },
+  rose: { alert: "destructive", text: "text-red-700", dot: "bg-red-600" },
+  emerald: { alert: "success", text: "text-emerald-700", dot: "bg-emerald-600" },
+  amber: { alert: "warning", text: "text-amber-700", dot: "bg-amber-500" },
+  sky: { alert: "info", text: "text-ink", dot: "bg-ink-3" },
+  slate: { alert: "default", text: "text-ink-3", dot: "bg-ink-4" },
 };
 
 export function newRun(snapshot) {
