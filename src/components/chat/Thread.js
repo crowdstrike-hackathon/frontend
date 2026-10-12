@@ -1,5 +1,5 @@
 import React from "react";
-import { CircleAlert, Filter, Info } from "lucide-react";
+import { CircleAlert, Filter, Info, Network } from "lucide-react";
 import { LogoMark } from "../../ui/Logo";
 import { Badge } from "../ui/badge";
 import { Bubble, BubbleContent } from "../ui/bubble";
@@ -8,6 +8,7 @@ import { Message, MessageAvatar, MessageContent, MessageHeader } from "../ui/mes
 import { Spinner } from "../ui/spinner";
 import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
 import StepCard from "./StepCard";
+import FlowMap from "./FlowMap";
 import { MODE_LABEL, OUTCOME, TONE, verdictNote } from "../../lib/chat";
 import { cn } from "../../lib/utils";
 
@@ -79,6 +80,8 @@ function Outcome({ turn, mode }) {
 }
 
 function Turn({ turn, chat, onDecide, deciding }) {
+  const [showMap, setShowMap] = React.useState(false);
+  const hasCalls = turn.items.some((i) => i.kind === "call");
   const done = turn.status !== "running";
   const thinking = !done && turn.thinking;
   const showOutcome = done && turn.outcome && (turn.acted || ["error", "cancelled", "interrupted"].includes(turn.outcome));
@@ -113,6 +116,17 @@ function Turn({ turn, chat, onDecide, deciding }) {
                   <MarkerContent>{turn.items.length ? "Working on the next step" : "Thinking"}</MarkerContent>
                 </Marker>
               )}
+            </div>
+          )}
+          {hasCalls && (
+            <div className="flex flex-col gap-2">
+              <button
+                onClick={() => setShowMap((v) => !v)}
+                className="flex w-fit items-center gap-1.5 rounded-md border border-line px-2.5 py-1 text-[12.5px] font-medium text-ink-2 transition-colors hover:bg-paper-3"
+              >
+                <Network className="h-3.5 w-3.5" /> {showMap ? "Hide information map" : "Show information map"}
+              </button>
+              {showMap && <FlowMap turn={turn} />}
             </div>
           )}
           {turn.answer && (
