@@ -1,4 +1,4 @@
-@import url("https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500;600&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500;600&family=Source+Serif+4:opsz,wght@8..60,400;8..60,500;8..60,600&display=swap");
 
 @tailwind base;
 @tailwind components;
@@ -6,26 +6,26 @@
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222 47% 11%;
+    --background: 48 33% 97%;
+    --foreground: 60 3% 8%;
     --card: 0 0% 100%;
-    --card-foreground: 222 47% 11%;
+    --card-foreground: 60 3% 8%;
     --popover: 0 0% 100%;
-    --popover-foreground: 222 47% 11%;
-    --primary: 201 96% 32%;
+    --popover-foreground: 60 3% 8%;
+    --primary: 15 55% 52%;
     --primary-foreground: 0 0% 100%;
-    --secondary: 204 94% 94%;
-    --secondary-foreground: 201 90% 24%;
-    --muted: 210 40% 96%;
-    --muted-foreground: 215 16% 42%;
-    --accent: 204 94% 94%;
-    --accent-foreground: 201 90% 24%;
-    --destructive: 347 77% 50%;
+    --secondary: 48 25% 92%;
+    --secondary-foreground: 60 3% 8%;
+    --muted: 48 25% 92%;
+    --muted-foreground: 51 3% 44%;
+    --accent: 48 25% 92%;
+    --accent-foreground: 60 3% 8%;
+    --destructive: 4 62% 46%;
     --destructive-foreground: 0 0% 100%;
-    --border: 214 32% 91%;
-    --input: 214 32% 88%;
-    --ring: 199 89% 48%;
-    --radius: 1rem;
+    --border: 50 21% 89%;
+    --input: 48 14% 82%;
+    --ring: 15 55% 52%;
+    --radius: 0.5rem;
   }
   html,
   body,

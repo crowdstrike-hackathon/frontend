@@ -1,17 +1,13 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import toast from "react-hot-toast";
-import { Filter, Plus, ShieldCheck, ShieldOff } from "lucide-react";
+import { Filter, PanelRight, ShieldCheck, ShieldOff } from "lucide-react";
 import { api } from "../api";
-import { CloudShader } from "../ui/aceternity";
-import { LogoMark } from "../ui/Logo";
-import AppBar from "../components/AppBar";
+import AppShell from "../components/AppShell";
 import Composer from "../components/chat/Composer";
 import Inbox from "../components/chat/Inbox";
 import SidePanel from "../components/chat/SidePanel";
 import RunThread from "../components/chat/Thread";
-import { Badge } from "../components/ui/badge";
-import { Button } from "../components/ui/button";
 import { ScrollArea } from "../components/ui/scroll-area";
 import { ToggleGroup, ToggleGroupItem } from "../components/ui/toggle-group";
 import { Tooltip, TooltipContent, TooltipTrigger } from "../components/ui/tooltip";
@@ -24,8 +20,6 @@ const MODES = [
   { id: "keyword", label: "Keyword filter", icon: Filter },
   { id: "riposte", label: "Riposte", icon: ShieldCheck },
 ];
-const PANEL = "rounded-3xl border border-white/60 bg-white/90 shadow-xl shadow-sky-950/10 backdrop-blur-xl";
-
 function savedMode() {
   try {
     const value = localStorage.getItem(MODE_KEY);
@@ -35,7 +29,7 @@ function savedMode() {
   }
 }
 
-function ModelBadge({ agent }) {
+function ModelStatus({ agent }) {
   if (!agent) return null;
   const ok = agent.reachable && agent.available;
   const hint = ok
@@ -46,11 +40,9 @@ function ModelBadge({ agent }) {
   return (
     <Tooltip>
       <TooltipTrigger asChild>
-        <span className="hidden sm:block">
-          <Badge variant="outline" className="h-9 cursor-help gap-2 border-white/60 bg-white/80 px-3 font-mono text-[11.5px] font-medium">
-            <span className={cn("h-2 w-2 rounded-full", ok ? "bg-emerald-500" : "bg-rose-500")} />
-            {ok ? agent.model : "model offline"}
-          </Badge>
+        <span className="hidden cursor-help items-center gap-1.5 font-mono text-[11.5px] text-ink-3 sm:flex">
+          <span className={cn("h-1.5 w-1.5 rounded-full", ok ? "bg-emerald-600" : "bg-red-600")} />
+          {ok ? agent.model : "model offline"}
         </span>
       </TooltipTrigger>
       <TooltipContent>{hint}</TooltipContent>
@@ -60,19 +52,22 @@ function ModelBadge({ agent }) {
 
 function EmptyState({ tickets, disabled, onPick }) {
   return (
-    <div className="flex h-full flex-col items-center justify-center px-6 py-10 text-center">
-      <span className="grid h-14 w-14 place-items-center rounded-2xl bg-sky-50 ring-1 ring-sky-200"><LogoMark size={32} /></span>
-      <h1 className="mt-5 text-2xl font-semibold tracking-tight text-slate-900">Send Nova a ticket</h1>
-      <p className="mt-2 max-w-md text-sm leading-relaxed text-slate-500">
-        Nova is a support agent with real tools: it can read customer records, fetch API keys, issue refunds and send email. Pick a ticket or write your own, then switch the defense and run it again.
+    <div className="mx-auto w-full max-w-2xl px-4 pb-6 pt-[14vh]">
+      <h1 className="font-serif text-[32px] leading-tight tracking-tight text-ink">Send Nova a ticket</h1>
+      <p className="mt-2 max-w-xl text-[15px] leading-relaxed text-ink-3">
+        Nova is a support agent with real tools. It reads customer records, fetches API keys, issues refunds and sends email. Run a ticket, then switch the defense and run it again.
       </p>
-      <div className="mt-6 flex max-w-xl flex-wrap justify-center gap-2">
-        {tickets.slice(0, 4).map((t) => (
-          <Button key={t.id} variant="outline" size="sm" disabled={disabled} onClick={() => onPick(t)}>
-            {t.title || t.subject}
-          </Button>
+      <ul className="mt-7 divide-y divide-line border-y border-line">
+        {tickets.slice(0, 5).map((t) => (
+          <li key={t.id}>
+            <button disabled={disabled} onClick={() => onPick(t)} className="flex w-full items-center gap-3 px-1 py-2.5 text-left transition-colors hover:bg-paper-3 disabled:opacity-50">
+              <span className="w-16 shrink-0 font-mono text-[11.5px] text-ink-4">{t.id}</span>
+              <span className="min-w-0 flex-1 truncate text-[14px] text-ink">{t.title || t.subject}</span>
+              <span className="hidden truncate text-[12.5px] text-ink-3 sm:block">{t.from}</span>
+            </button>
+          </li>
         ))}
-      </div>
+      </ul>
     </div>
   );
 }
@@ -87,6 +82,7 @@ export default function Console() {
   const [runs, setRuns] = useState([]);
   const [starting, setStarting] = useState(false);
   const [deciding, setDeciding] = useState(false);
+  const [panel, setPanel] = useState(true);
   const streams = useRef({});
   const viewport = useRef(null);
 
@@ -211,64 +207,62 @@ export default function Console() {
     if (active && isLive(active)) api.cancelRun(active.id).catch((e) => toast.error(e.message));
   };
 
+  const header = (
+    <>
+      <ToggleGroup type="single" value={mode} onValueChange={setMode} aria-label="Defense mode">
+        {MODES.map((m) => {
+          const Icon = m.icon;
+          return (
+            <ToggleGroupItem key={m.id} value={m.id} aria-label={m.label}>
+              <Icon /> <span className={cn(m.id !== mode && "hidden sm:inline")}>{m.label}</span>
+            </ToggleGroupItem>
+          );
+        })}
+      </ToggleGroup>
+      <p className="hidden min-w-0 flex-1 truncate pl-1 text-[12.5px] text-ink-3 md:block">{modeInfo?.blurb}</p>
+      <span className="flex-1 md:hidden" />
+      <ModelStatus agent={meta?.agent} />
+      <button
+        onClick={() => setPanel((v) => !v)}
+        aria-label="Toggle details panel"
+        aria-pressed={panel}
+        className={cn("hidden h-8 w-8 place-items-center rounded-md text-ink-3 transition-colors hover:bg-paper-3 hover:text-ink xl:grid", panel && "text-ink")}
+      >
+        <PanelRight className="h-4 w-4" />
+      </button>
+    </>
+  );
+
   return (
-    <div className="relative flex h-screen flex-col overflow-hidden">
-      <CloudShader className="absolute inset-0" skyTopColor="#245a9c" skyBottomColor="#7fb2de" count={4} speed={0.6} />
-      <div className="pointer-events-none absolute inset-x-0 top-0 h-48 bg-gradient-to-b from-[#0b2a55]/55 to-transparent" />
-
-      <div className="relative z-10 flex min-h-0 flex-1 flex-col gap-3 p-3 md:p-4">
-        <AppBar right={<ModelBadge agent={meta?.agent} />}>
-          <ToggleGroup type="single" value={mode} onValueChange={setMode} aria-label="Defense mode">
-            {MODES.map((m) => {
-              const Icon = m.icon;
-              return (
-                <ToggleGroupItem key={m.id} value={m.id} aria-label={m.label}>
-                  <Icon /> <span className={cn(m.id !== mode && "hidden sm:inline")}>{m.label}</span>
-                </ToggleGroupItem>
-              );
-            })}
-          </ToggleGroup>
-        </AppBar>
-
-        <div className="grid min-h-0 flex-1 grid-cols-1 gap-3 lg:grid-cols-[280px_minmax(0,1fr)] xl:grid-cols-[280px_minmax(0,1fr)_320px]">
-          <aside className={cn(PANEL, "hidden min-h-0 lg:block")}>
-            <Inbox tickets={tickets} file={file} activeId={active?.ticket?.id} disabled={busy} onPick={(t) => runTicket(t)} />
-          </aside>
-
-          <main className={cn(PANEL, "flex min-h-0 flex-col overflow-hidden")}>
-            <div className="flex shrink-0 items-center gap-3 border-b border-slate-200/80 px-4 py-2.5">
-              <p className="min-w-0 flex-1 text-[12.5px] leading-snug text-slate-600">
-                <span className="font-semibold text-slate-900">{modeInfo?.label || "Riposte"}.</span> {modeInfo?.blurb}
-              </p>
-              <Button variant="ghost" size="sm" disabled={busy || runs.length === 0} onClick={() => setRuns([])}>
-                <Plus /> New chat
-              </Button>
+    <AppShell
+      onNew={() => setRuns([])}
+      newDisabled={busy}
+      header={header}
+      sidebar={<Inbox tickets={tickets} file={file} activeId={active?.ticket?.id} disabled={busy} onPick={(t) => runTicket(t)} />}
+    >
+      <main className="flex min-w-0 flex-1 flex-col">
+        <ScrollArea className="min-h-0 flex-1" viewportRef={viewport}>
+          {runs.length === 0 ? (
+            <EmptyState tickets={tickets} disabled={busy} onPick={(t) => runTicket(t)} />
+          ) : (
+            <div className="mx-auto flex max-w-3xl flex-col gap-10 px-4 py-6">
+              {runs.map((run, i) => (
+                <RunThread key={run.id} run={run} onDecide={decide} deciding={deciding} onRerun={rerun} canRerun={!busy && i === runs.length - 1} />
+              ))}
             </div>
-            <ScrollArea className="min-h-0 flex-1" viewportRef={viewport}>
-              {runs.length === 0 ? (
-                <div className="h-[min(60vh,32rem)]">
-                  <EmptyState tickets={tickets} disabled={busy} onPick={(t) => runTicket(t)} />
-                </div>
-              ) : (
-                <div className="mx-auto flex max-w-3xl flex-col gap-6 px-4 py-5">
-                  {runs.map((run, i) => (
-                    <RunThread key={run.id} run={run} onDecide={decide} deciding={deciding} onRerun={rerun} canRerun={!busy && i === runs.length - 1} />
-                  ))}
-                </div>
-              )}
-            </ScrollArea>
-            <div className="shrink-0 px-3 pb-3 pt-1 md:px-4 md:pb-4">
-              <div className="mx-auto max-w-3xl">
-                <Composer customers={world?.customers || []} busy={busy} onSend={(ticket) => start({ mode, ticket })} onStop={stop} />
-              </div>
-            </div>
-          </main>
-
-          <aside className={cn(PANEL, "hidden min-h-0 overflow-hidden xl:block")}>
-            <SidePanel runs={runs} run={active} world={world} />
-          </aside>
+          )}
+        </ScrollArea>
+        <div className="shrink-0 px-3 pb-4 md:px-4">
+          <div className={cn("mx-auto", runs.length === 0 ? "max-w-2xl" : "max-w-3xl")}>
+            <Composer customers={world?.customers || []} busy={busy} onSend={(ticket) => start({ mode, ticket })} onStop={stop} />
+          </div>
         </div>
-      </div>
-    </div>
+      </main>
+      {panel && (
+        <aside className="hidden w-[320px] shrink-0 border-l border-line bg-paper-2 xl:block">
+          <SidePanel runs={runs} run={active} world={world} />
+        </aside>
+      )}
+    </AppShell>
   );
 }

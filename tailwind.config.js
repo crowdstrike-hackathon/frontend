@@ -16,10 +16,15 @@ module.exports = {
         muted: { DEFAULT: "hsl(var(--muted))", foreground: "hsl(var(--muted-foreground))" },
         accent: { DEFAULT: "hsl(var(--accent))", foreground: "hsl(var(--accent-foreground))" },
         popover: { DEFAULT: "hsl(var(--popover))", foreground: "hsl(var(--popover-foreground))" },
+        paper: { DEFAULT: "#FAF9F5", 2: "#F5F4ED", 3: "#F0EEE6" },
+        line: { DEFAULT: "#E8E6DC", strong: "#D1CFC5" },
+        ink: { DEFAULT: "#141413", 2: "#3D3D3A", 3: "#73726C", 4: "#A3A199" },
+        clay: { DEFAULT: "#C96442", dark: "#AE5630" },
         card: { DEFAULT: "hsl(var(--card))", foreground: "hsl(var(--card-foreground))" },
       },
       fontFamily: {
         sans: ["Geist", "-apple-system", "BlinkMacSystemFont", "Segoe UI", "sans-serif"],
+        serif: ['"Source Serif 4"', "ui-serif", "Georgia", "serif"],
         mono: ["Geist Mono", "SF Mono", "Menlo", "monospace"],
       },
       animation: {

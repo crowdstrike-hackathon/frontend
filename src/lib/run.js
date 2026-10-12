@@ -22,11 +22,11 @@ export const OUTCOME = {
 };
 
 export const TONE = {
-  rose: { panel: "border-rose-200 bg-rose-50", text: "text-rose-700", icon: "bg-rose-600 text-white", dot: "bg-rose-500" },
-  emerald: { panel: "border-emerald-200 bg-emerald-50", text: "text-emerald-700", icon: "bg-emerald-600 text-white", dot: "bg-emerald-500" },
-  amber: { panel: "border-amber-200 bg-amber-50", text: "text-amber-700", icon: "bg-amber-500 text-white", dot: "bg-amber-500" },
-  sky: { panel: "border-sky-200 bg-sky-50", text: "text-sky-700", icon: "bg-sky-600 text-white", dot: "bg-sky-500" },
-  slate: { panel: "border-slate-200 bg-slate-50", text: "text-slate-600", icon: "bg-slate-500 text-white", dot: "bg-slate-400" },
+  rose: { bar: "border-l-red-700", text: "text-red-700", dot: "bg-red-600" },
+  emerald: { bar: "border-l-emerald-700", text: "text-emerald-700", dot: "bg-emerald-600" },
+  amber: { bar: "border-l-amber-600", text: "text-amber-700", dot: "bg-amber-500" },
+  sky: { bar: "border-l-ink-3", text: "text-ink", dot: "bg-ink-3" },
+  slate: { bar: "border-l-line-strong", text: "text-ink-3", dot: "bg-ink-4" },
 };
 
 export function newRun(snapshot) {

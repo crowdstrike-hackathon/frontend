@@ -12,8 +12,8 @@ function Protected({ children }) {
   const { user, loading } = useAuth();
   if (loading)
     return (
-      <div className="flex h-screen items-center justify-center bg-sky-100">
-        <Loader2 className="h-6 w-6 animate-spin text-sky-700" />
+      <div className="flex h-screen items-center justify-center bg-paper">
+        <Loader2 className="h-6 w-6 animate-spin text-clay" />
       </div>
     );
   if (!user) return <Navigate to="/login" replace />;

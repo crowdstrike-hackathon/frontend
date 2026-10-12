@@ -1,9 +1,6 @@
 import React, { useState } from "react";
 import { ArrowUp, Square } from "lucide-react";
-import { Button } from "../ui/button";
-import { Input } from "../ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
-import { Textarea } from "../ui/textarea";
 
 const NONE = "none";
 
@@ -41,11 +38,29 @@ export default function Composer({ customers, busy, onSend, onStop }) {
   };
 
   return (
-    <div className="rounded-3xl border border-slate-200 bg-white p-2.5 shadow-lg shadow-sky-900/5">
-      <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-        <Input value={from} onChange={(e) => setFrom(e.target.value)} placeholder="Sender address, e.g. someone@example.com" aria-label="Sender address" className="h-9 rounded-full text-[13px]" />
+    <div className="rounded-2xl border border-line-strong bg-white shadow-[0_2px_8px_rgba(20,20,19,0.05)] transition-colors focus-within:border-ink-4">
+      <textarea
+        value={body}
+        onChange={(e) => setBody(e.target.value)}
+        onKeyDown={onKey}
+        rows={2}
+        aria-label="Ticket text"
+        placeholder="Write a ticket as a customer, or as an attacker"
+        className="block max-h-40 min-h-[56px] w-full resize-none bg-transparent px-4 pt-3.5 text-[15px] leading-relaxed text-ink placeholder:text-ink-4 focus:outline-none"
+      />
+      <div className="flex items-center gap-2 px-2.5 pb-2.5 pt-1">
+        <label className="flex h-8 min-w-0 flex-1 items-center gap-1.5 rounded-lg border border-line px-2.5 text-[12.5px] focus-within:border-ink-4 sm:max-w-[250px]">
+          <span className="shrink-0 text-ink-4">From</span>
+          <input
+            value={from}
+            onChange={(e) => setFrom(e.target.value)}
+            placeholder="someone@example.com"
+            aria-label="Sender address"
+            className="min-w-0 flex-1 bg-transparent text-ink placeholder:text-ink-4 focus:outline-none"
+          />
+        </label>
         <Select value={account} onValueChange={pick}>
-          <SelectTrigger className="h-9 rounded-full text-[13px]" aria-label="Matched account">
+          <SelectTrigger className="hidden h-8 w-auto max-w-[220px] border-line px-2.5 text-[12.5px] text-ink-2 sm:flex" aria-label="Matched account">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
@@ -55,24 +70,15 @@ export default function Composer({ customers, busy, onSend, onStop }) {
             ))}
           </SelectContent>
         </Select>
-      </div>
-      <div className="mt-2 flex items-end gap-2">
-        <Textarea
-          value={body}
-          onChange={(e) => setBody(e.target.value)}
-          onKeyDown={onKey}
-          rows={2}
-          placeholder="Write a ticket as a customer, or as an attacker. Try to make Nova leak a key."
-          className="max-h-40 min-h-[52px] flex-1 resize-none border-0 px-2 shadow-none focus-visible:ring-0"
-        />
+        <span className="flex-1" />
         {busy ? (
-          <Button size="icon" variant="outline" onClick={onStop} aria-label="Stop the run">
-            <Square />
-          </Button>
+          <button onClick={onStop} aria-label="Stop the run" className="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-ink text-white transition-colors hover:bg-ink-2">
+            <Square className="h-3 w-3 fill-current" />
+          </button>
         ) : (
-          <Button size="icon" disabled={!ready} onClick={send} aria-label="Send ticket">
-            <ArrowUp />
-          </Button>
+          <button onClick={send} disabled={!ready} aria-label="Send ticket" className="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-clay text-white transition-colors hover:bg-clay-dark disabled:opacity-40">
+            <ArrowUp className="h-4 w-4" />
+          </button>
         )}
       </div>
     </div>
