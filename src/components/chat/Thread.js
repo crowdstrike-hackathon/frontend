@@ -1,6 +1,6 @@
 import React from "react";
 import { CircleAlert, Filter, Info, Network } from "lucide-react";
-import { LogoMark } from "../../ui/Logo";
+import { NovaMark } from "../../ui/Logo";
 import { Badge } from "../ui/badge";
 import { Bubble, BubbleContent } from "../ui/bubble";
 import { Marker, MarkerContent, MarkerIcon } from "../ui/marker";
@@ -98,7 +98,7 @@ function Turn({ turn, chat, onDecide, deciding }) {
         </MessageContent>
       </Message>
       <Message>
-        <MessageAvatar className="bg-transparent"><LogoMark size={28} /></MessageAvatar>
+        <MessageAvatar className="bg-transparent"><NovaMark size={28} /></MessageAvatar>
         <MessageContent>
           <MessageHeader className="h-8">
             <span className="text-[13px] text-ink">Nova</span>
