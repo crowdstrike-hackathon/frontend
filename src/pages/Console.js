@@ -89,9 +89,11 @@ export default function Console() {
     } catch {}
   };
 
+  const [ticketsLoaded, setTicketsLoaded] = useState(false);
   const loadTickets = useCallback(() => {
     api.tickets().then((d) => {
       setTickets(d.tickets);
+      setTicketsLoaded(true);
     }).catch((e) => toast.error(e.message));
   }, []);
 
@@ -103,6 +105,7 @@ export default function Console() {
 
   const seenInbound = useRef(null);
   useEffect(() => {
+    if (!ticketsLoaded) return;
     const ids = tickets.filter((t) => t.kind === "inbound").map((t) => t.id);
     if (seenInbound.current) {
       tickets
@@ -114,7 +117,7 @@ export default function Console() {
         ), { icon: "✉️" }));
     }
     seenInbound.current = new Set(ids);
-  }, [tickets]);
+  }, [tickets, ticketsLoaded]);
 
   useEffect(() => {
     const timer = setInterval(() => {
