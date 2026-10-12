@@ -8,7 +8,7 @@ import { cn } from "../lib/utils";
 
 const ROW = "flex h-8 items-center gap-2.5 rounded-md px-2 text-[13.5px] text-ink-2 transition-colors hover:bg-paper-3 hover:text-ink [&_svg]:size-4 [&_svg]:shrink-0";
 
-export default function AppShell({ onNew, newDisabled, sidebar, header, children }) {
+export default function AppShell({ onNew, newDisabled, workspace, sidebar, header, children }) {
   const { user, logout } = useAuth();
   const name = user?.name || user?.email || "";
   return (
@@ -17,6 +17,13 @@ export default function AppShell({ onNew, newDisabled, sidebar, header, children
         <div className="flex h-12 shrink-0 items-center px-4">
           <Link to="/" className="flex items-center gap-2 text-[16px] font-semibold tracking-tight text-ink"><LogoMark size={24} /> Riposte</Link>
         </div>
+        {workspace && (
+          <div className="mx-2 mb-2 rounded-md border border-line bg-white px-2.5 py-2">
+            <div className="text-[10.5px] font-medium uppercase tracking-wide text-ink-4">Demo workspace</div>
+            <div className="mt-0.5 text-[13px] font-medium text-ink">{workspace} support desk</div>
+            <div className="text-[11.5px] leading-snug text-ink-3">A made-up company protected by Riposte</div>
+          </div>
+        )}
         <nav className="flex shrink-0 flex-col gap-px px-2 pb-2">
           <button onClick={onNew} disabled={newDisabled} className={cn(ROW, "text-left disabled:opacity-40")}>
             <SquarePen className="text-brand" /> New chat

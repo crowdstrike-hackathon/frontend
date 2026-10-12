@@ -72,6 +72,11 @@ export default function SidePanel({ chat, compare, world }) {
   const policy = world?.policy;
   return (
     <ScrollArea className="h-full">
+      <Section title="What you are looking at">
+        <p className="text-[12.5px] leading-relaxed text-ink-3">
+          Nova is the agent. Riposte checks each tool call Nova makes and marks it allowed, held or blocked. The company, its customers and their keys are a sandbox, so nothing here is real data. The attacks and decisions are live.
+        </p>
+      </Section>
       <Section title="Same message, each mode">
         {compare ? (
           <>
@@ -79,13 +84,13 @@ export default function SidePanel({ chat, compare, world }) {
             <Scoreboard result={compare.result} />
           </>
         ) : (
-          <p className={EMPTY}>Ask Nova to handle a ticket to compare the defenses.</p>
+          <p className={EMPTY}>Hand Nova a ticket to compare the defenses.</p>
         )}
       </Section>
       <Section title="What left the sandbox">
         <Effects chat={chat} />
       </Section>
-      <Section title="Addresses on file">
+      <Section title="Northwind's customers">
         <ul className="divide-y divide-line rounded-lg border border-line bg-white">
           {(world?.customers || []).map((c) => (
             <li key={c.id} className="px-3 py-2">

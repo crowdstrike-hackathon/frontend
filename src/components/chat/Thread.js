@@ -1,10 +1,8 @@
 import React from "react";
-import { CircleAlert, Filter, Info, RotateCcw } from "lucide-react";
+import { CircleAlert, Filter, Info } from "lucide-react";
 import { LogoMark } from "../../ui/Logo";
-import { Alert, AlertDescription, AlertTitle } from "../ui/alert";
 import { Badge } from "../ui/badge";
 import { Bubble, BubbleContent } from "../ui/bubble";
-import { Button } from "../ui/button";
 import { Marker, MarkerContent, MarkerIcon } from "../ui/marker";
 import { Message, MessageAvatar, MessageContent, MessageHeader } from "../ui/message";
 import { Spinner } from "../ui/spinner";
@@ -70,23 +68,27 @@ function Outcome({ turn, mode, onRerun }) {
   const note = verdictNote(turn, mode);
   const others = ["off", "keyword", "riposte"].filter((m) => m !== mode);
   return (
-    <Alert variant={tone.alert}>
-      <Icon />
-      <AlertTitle>{meta.label}</AlertTitle>
-      <AlertDescription>
-        <p>{turn.summary}{note ? ` ${note}` : ""}</p>
-        {onRerun && (
-          <div className="mt-1.5 flex flex-wrap items-center gap-2">
-            <span className="text-[12px] text-ink-3">Try the same message in a new chat with</span>
-            {others.map((m) => (
-              <Button key={m} size="sm" variant="outline" onClick={() => onRerun(turn.message, m)}>
-                <RotateCcw /> {MODE_LABEL[m]}
-              </Button>
-            ))}
-          </div>
-        )}
-      </AlertDescription>
-    </Alert>
+    <div className="flex flex-col gap-1.5 pt-0.5 text-[13px] leading-relaxed">
+      <p className="flex items-start gap-2 text-ink-2">
+        <Icon className={cn("mt-[3px] h-4 w-4 shrink-0", tone.text)} />
+        <span>
+          <span className={cn("font-semibold", tone.text)}>{meta.label}.</span> {turn.summary}{note ? ` ${note}` : ""}
+        </span>
+      </p>
+      {onRerun && (
+        <p className="flex flex-wrap items-center gap-x-1 pl-6 text-[12.5px] text-ink-3">
+          Compare with
+          {others.map((m, i) => (
+            <React.Fragment key={m}>
+              {i > 0 && <span>or</span>}
+              <button onClick={() => onRerun(turn.message, m)} className="rounded px-1 font-medium text-brand underline-offset-2 transition-colors hover:underline">
+                {MODE_LABEL[m]}
+              </button>
+            </React.Fragment>
+          ))}
+        </p>
+      )}
+    </div>
   );
 }
 
@@ -110,6 +112,7 @@ function Turn({ turn, chat, onDecide, deciding, onRerun }) {
         <MessageContent>
           <MessageHeader className="h-8">
             <span className="text-[13px] text-ink">Nova</span>
+            <span className="font-normal">Northwind's support agent</span>
           </MessageHeader>
           {(turn.items.length > 0 || thinking) && (
             <div className="divide-y divide-line overflow-hidden rounded-lg border border-line bg-white">

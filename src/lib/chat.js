@@ -2,7 +2,7 @@ import { ShieldAlert, ShieldCheck, ShieldQuestion, Hand, CircleCheck, CircleAler
 
 export const EVENT_TYPES = ["turn", "thinking", "call", "result", "hold", "hold_resolved", "filter", "note", "error", "turn_done"];
 
-export const MODE_LABEL = { off: "Defense off", keyword: "Keyword filter", riposte: "Riposte" };
+export const MODE_LABEL = { off: "No defense", keyword: "Keyword filter", riposte: "Riposte" };
 
 export const SOURCE = {
   trusted: { label: "trusted", hint: "This value appears in a trusted source." },
@@ -131,6 +131,5 @@ export function verdictNote(turn, mode) {
   if (turn.outcome === "quarantined") return "The ticket never reached the agent, whether or not it was an attack. A person has to read it.";
   if (turn.outcome === "compromised" && mode === "keyword") return "The ticket contained none of the phrases the filter looks for, so it went straight through.";
   if (turn.outcome === "compromised" && mode === "off") return "Nothing checked the agent's tool calls.";
-  if (turn.outcome === "blocked") return "The agent was allowed to keep working.";
   return "";
 }

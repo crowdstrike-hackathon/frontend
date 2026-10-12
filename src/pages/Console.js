@@ -54,13 +54,16 @@ function ModelStatus({ agent }) {
 function EmptyState({ tickets, file, disabled, onPick }) {
   return (
     <div className="mx-auto w-full max-w-2xl px-4 pb-6 pt-[10vh]">
-      <h1 className="text-[30px] font-semibold leading-tight tracking-tight text-ink">Chat with Nova</h1>
+      <h1 className="text-[30px] font-semibold leading-tight tracking-tight text-ink">Northwind support desk</h1>
       <p className="mt-2 max-w-xl text-[15px] leading-relaxed text-ink-3">
-        Nova is a support copilot with real tools. It reads tickets and customer records, fetches API keys, issues refunds and sends email. Talk to it, or type @ to hand it a ticket from the inbox.
+        Northwind is a made-up API company. Nova is its AI support agent, and it can read tickets, fetch customers' API keys, issue refunds and send email. Riposte is the firewall between Nova and those tools.
+      </p>
+      <p className="mt-2 max-w-xl text-[15px] leading-relaxed text-ink-3">
+        You work the desk. Chat with Nova, or type @ to hand it a ticket.
       </p>
       <div className="mt-7 flex items-baseline gap-2 pb-2 text-[12px] text-ink-3">
         <span className="font-medium">Inbox</span>
-        <span>Customer emails waiting for support. Some were written by an attacker.</span>
+        <span>Emails from Northwind's customers. Some were written by an attacker.</span>
         <span className="ml-auto hidden font-mono text-[10.5px] text-ink-4 sm:block">{file?.path}</span>
       </div>
       {file?.errors?.length > 0 && (
@@ -292,6 +295,7 @@ export default function Console() {
   return (
     <AppShell
       onNew={newConversation}
+      workspace={meta?.company}
       newDisabled={busy}
       header={header}
       sidebar={<Recents rows={history} activeId={chat?.id} disabled={busy} onOpen={(id) => setParams({ chat: id })} />}
