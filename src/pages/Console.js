@@ -1,17 +1,17 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
-import { useSearchParams } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import toast from "react-hot-toast";
-import { Filter, PanelRight, ShieldCheck, ShieldOff } from "lucide-react";
+import { Filter, ShieldCheck, ShieldOff } from "lucide-react";
 import { api } from "../api";
 import AppShell from "../components/AppShell";
 import Composer from "../components/chat/Composer";
 import Recents from "../components/chat/Recents";
-import SidePanel from "../components/chat/SidePanel";
 import ChatThread from "../components/chat/Thread";
 import { ScrollArea } from "../components/ui/scroll-area";
 import { ToggleGroup, ToggleGroupItem } from "../components/ui/toggle-group";
 import { Tooltip, TooltipContent, TooltipTrigger } from "../components/ui/tooltip";
 import { EVENT_TYPES, applyEvent, fromSnapshot, isBusy, newChat } from "../lib/chat";
+import useChatHistory from "../lib/useChatHistory";
 import { cn } from "../lib/utils";
 
 const MODE_KEY = "riposte_mode";
@@ -41,10 +41,9 @@ function ModelStatus({ agent }) {
   return (
     <Tooltip>
       <TooltipTrigger asChild>
-        <span className="hidden cursor-help items-center gap-1.5 font-mono text-[11.5px] text-ink-3 sm:flex">
-          <span className={cn("h-1.5 w-1.5 rounded-full", ok ? "bg-emerald-600" : "bg-red-600")} />
+        <Link to="/settings" className={cn("hidden font-mono text-[11.5px] transition-colors hover:text-ink sm:block", ok ? "text-ink-3" : "text-red-700")}>
           {ok ? agent.model : "model offline"}
-        </span>
+        </Link>
       </TooltipTrigger>
       <TooltipContent>{hint}</TooltipContent>
     </Tooltip>
@@ -77,7 +76,7 @@ function EmptyState({ tickets, file, disabled, onPick }) {
               <span className="w-16 shrink-0 font-mono text-[11.5px] text-ink-4">{t.id}</span>
               <span className="min-w-0 flex-1 truncate text-[14px] text-ink">{t.title || t.subject}</span>
               <span className="hidden truncate text-[12.5px] text-ink-3 group-hover:hidden sm:block">{t.from}</span>
-              <span className="hidden shrink-0 text-[12.5px] font-medium text-brand sm:group-hover:block">Ask Nova to handle it</span>
+              <span className="hidden shrink-0 text-[12.5px] font-medium text-ink sm:group-hover:block">Ask Nova to handle it</span>
             </button>
           </li>
         ))}
@@ -86,23 +85,17 @@ function EmptyState({ tickets, file, disabled, onPick }) {
   );
 }
 
-function compareKey(message) {
-  return message.trim().toLowerCase();
-}
-
 export default function Console() {
   const [params, setParams] = useSearchParams();
   const [meta, setMeta] = useState(null);
   const [tickets, setTickets] = useState([]);
   const [file, setFile] = useState(null);
   const [world, setWorld] = useState(null);
-  const [history, setHistory] = useState([]);
+  const { rows: history, reload: loadHistory, rename: renameChat, archive, remove } = useChatHistory();
   const [mode, setModeState] = useState(savedMode);
   const [chat, setChat] = useState(null);
-  const [results, setResults] = useState({});
   const [starting, setStarting] = useState(false);
   const [deciding, setDeciding] = useState(false);
-  const [panel, setPanel] = useState(true);
   const stream = useRef(null);
   const viewport = useRef(null);
 
@@ -123,16 +116,11 @@ export default function Console() {
     }).catch((e) => toast.error(e.message));
   }, []);
 
-  const loadHistory = useCallback(() => {
-    api.history().then(setHistory).catch(() => {});
-  }, []);
-
   useEffect(() => {
     api.meta().then(setMeta).catch((e) => toast.error(e.message));
     api.world().then(setWorld).catch(() => {});
     loadTickets();
-    loadHistory();
-  }, [loadTickets, loadHistory]);
+  }, [loadTickets]);
 
   const hangUp = useCallback(() => {
     stream.current?.close();
@@ -195,16 +183,6 @@ export default function Console() {
     if (el) el.scrollTo({ top: el.scrollHeight, behavior: "smooth" });
   }, [chat]);
 
-  const lastTurn = chat?.turns[chat.turns.length - 1];
-  const settled = !!lastTurn && lastTurn.status !== "running" && lastTurn.acted;
-  const settledKey = settled ? compareKey(lastTurn.message) : "";
-  const settledMode = settled ? chat.mode : "";
-  const settledOutcome = settled ? lastTurn.outcome : "";
-  useEffect(() => {
-    if (!settledKey) return;
-    setResults((prev) => ({ ...prev, [settledKey]: { ...prev[settledKey], [settledMode]: settledOutcome } }));
-  }, [settledKey, settledMode, settledOutcome]);
-
   const newConversation = () => {
     hangUp();
     setChat(null);
@@ -258,12 +236,20 @@ export default function Console() {
     }
   };
 
+  const archiveChat = (id, archived) => {
+    if (archived && chat?.id === id) newConversation();
+    archive(id, archived);
+  };
+
+  const deleteChat = (id) => {
+    if (chat?.id === id) newConversation();
+    remove(id);
+  };
+
   const stop = () => {
     if (chat && isBusy(chat)) api.cancelChat(chat.id).catch((e) => toast.error(e.message));
   };
 
-  const compared = [...(chat?.turns || [])].reverse().find((t) => t.acted);
-  const compare = compared ? { message: compared.message, result: results[compareKey(compared.message)] || {} } : null;
   const hasTurns = !!chat && chat.turns.length > 0;
 
   const header = (
@@ -281,24 +267,15 @@ export default function Console() {
       <p className="hidden min-w-0 flex-1 truncate pl-1 text-[12.5px] text-ink-3 md:block">{modeInfo?.blurb}</p>
       <span className="flex-1 md:hidden" />
       <ModelStatus agent={meta?.agent} />
-      <button
-        onClick={() => setPanel((v) => !v)}
-        aria-label="Toggle details panel"
-        aria-pressed={panel}
-        className={cn("hidden h-8 w-8 place-items-center rounded-md text-ink-3 transition-colors hover:bg-paper-3 hover:text-ink xl:grid", panel && "text-ink")}
-      >
-        <PanelRight className="h-4 w-4" />
-      </button>
     </>
   );
 
   return (
     <AppShell
       onNew={newConversation}
-      workspace={meta?.company}
       newDisabled={busy}
       header={header}
-      sidebar={<Recents rows={history} activeId={chat?.id} disabled={busy} onOpen={(id) => setParams({ chat: id })} />}
+      sidebar={<Recents rows={history} activeId={chat?.id} disabled={busy} onOpen={(id) => setParams({ chat: id })} onRename={renameChat} onArchive={archiveChat} onDelete={deleteChat} />}
     >
       <main className="flex min-w-0 flex-1 flex-col">
         <ScrollArea className="min-h-0 flex-1" viewportRef={viewport}>
@@ -316,11 +293,6 @@ export default function Console() {
           </div>
         </div>
       </main>
-      {panel && (
-        <aside className="hidden w-[320px] shrink-0 border-l border-line bg-paper-2 xl:block">
-          <SidePanel chat={chat} compare={compare} world={world} />
-        </aside>
-      )}
     </AppShell>
   );
 }

@@ -10,7 +10,7 @@ function BubbleGroup({ className, ...props }) {
 const bubbleVariants = cva("group/bubble relative flex w-fit min-w-0 max-w-[80%] flex-col gap-1 data-[align=end]:self-end data-[variant=ghost]:max-w-full", {
   variants: {
     variant: {
-      default: "[&>[data-slot=bubble-content]]:bg-primary [&>[data-slot=bubble-content]]:text-primary-foreground",
+      default: "[&>[data-slot=bubble-content]]:bg-ink [&>[data-slot=bubble-content]]:text-white",
       secondary: "[&>[data-slot=bubble-content]]:bg-secondary [&>[data-slot=bubble-content]]:text-secondary-foreground",
       muted: "[&>[data-slot=bubble-content]]:bg-muted [&>[data-slot=bubble-content]]:text-foreground",
       outline: "[&>[data-slot=bubble-content]]:border-border [&>[data-slot=bubble-content]]:bg-background [&>[data-slot=bubble-content]]:text-foreground",
@@ -30,7 +30,7 @@ function BubbleContent({ asChild = false, className, ...props }) {
   return (
     <Comp
       data-slot="bubble-content"
-      className={cn("w-fit min-w-0 max-w-full overflow-hidden break-words rounded-xl border border-transparent px-3.5 py-2.5 text-sm leading-relaxed group-data-[align=end]/bubble:self-end", className)}
+      className={cn("w-fit min-w-0 max-w-full overflow-hidden break-words rounded-lg border border-transparent px-3 py-2 text-sm leading-normal group-data-[align=end]/bubble:self-end", className)}
       {...props}
     />
   );

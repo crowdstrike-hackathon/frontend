@@ -3,15 +3,15 @@ import { cva } from "class-variance-authority";
 import { cn } from "../../lib/utils";
 
 const alertVariants = cva(
-  "relative grid w-full grid-cols-[0_1fr] items-start gap-y-1 rounded-lg border px-3.5 py-3 text-sm has-[>svg]:grid-cols-[1rem_1fr] has-[>svg]:gap-x-3 [&>svg]:size-4 [&>svg]:translate-y-0.5 [&>svg]:text-current",
+  "relative grid w-full grid-cols-[0_1fr] items-start gap-y-1 rounded-sm border px-3.5 py-3 text-sm has-[>svg]:grid-cols-[1rem_1fr] has-[>svg]:gap-x-3 [&>svg]:size-4 [&>svg]:translate-y-0.5",
   {
     variants: {
       variant: {
         default: "border-border bg-card text-card-foreground",
-        info: "border-sky-200 bg-sky-50 text-sky-900",
-        success: "border-emerald-200 bg-emerald-50 text-emerald-800",
-        warning: "border-amber-300 bg-amber-50 text-amber-800",
-        destructive: "border-red-200 bg-red-50 text-red-800",
+        info: "border-line border-l-2 border-l-brand bg-white/60 text-ink [&>svg]:text-brand",
+        success: "border-line border-l-2 border-l-emerald-600 bg-white/60 text-ink [&>svg]:text-emerald-600",
+        warning: "border-line border-l-2 border-l-amber-500 bg-white/60 text-ink [&>svg]:text-amber-600",
+        destructive: "border-line border-l-2 border-l-red-600 bg-white/60 text-ink [&>svg]:text-red-600",
       },
     },
     defaultVariants: { variant: "default" },

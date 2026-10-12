@@ -19,7 +19,7 @@ function Mentions({ text, refs }) {
     return (
       <Tooltip key={i}>
         <TooltipTrigger asChild>
-          <span className="cursor-help rounded bg-white/20 px-1 py-px font-mono text-[0.92em]">{part}</span>
+          <span className="cursor-help rounded-sm bg-white/15 px-1 py-px font-mono text-[0.9em]">{part}</span>
         </TooltipTrigger>
         <TooltipContent>{ref.kind === "ticket" ? "Ticket" : "Customer"}: {ref.label}</TooltipContent>
       </Tooltip>
@@ -42,7 +42,7 @@ function FilterRow({ item }) {
       {hit && (
         <div className="mt-2 flex flex-wrap gap-1.5 pl-[26px]">
           {item.hits.map((h, i) => (
-            <code key={i} className="rounded bg-amber-100 px-1.5 py-px font-mono text-[11.5px] text-amber-900">{h}</code>
+            <code key={i} className="rounded-sm border border-line px-1.5 py-px font-mono text-[11.5px] text-amber-800">{h}</code>
           ))}
         </div>
       )}
@@ -81,7 +81,7 @@ function Outcome({ turn, mode, onRerun }) {
           {others.map((m, i) => (
             <React.Fragment key={m}>
               {i > 0 && <span>or</span>}
-              <button onClick={() => onRerun(turn.message, m)} className="rounded px-1 font-medium text-brand underline-offset-2 transition-colors hover:underline">
+              <button onClick={() => onRerun(turn.message, m)} className="rounded-sm px-1 font-medium text-ink underline decoration-line-strong underline-offset-2 transition-colors hover:decoration-ink">
                 {MODE_LABEL[m]}
               </button>
             </React.Fragment>
@@ -101,7 +101,7 @@ function Turn({ turn, chat, onDecide, deciding, onRerun }) {
       <Message align="end">
         <MessageContent>
           <Bubble align="end">
-            <BubbleContent className="whitespace-pre-wrap text-[14.5px]">
+            <BubbleContent className="whitespace-pre-wrap text-[14px]">
               <Mentions text={turn.message} refs={turn.refs} />
             </BubbleContent>
           </Bubble>
@@ -115,7 +115,7 @@ function Turn({ turn, chat, onDecide, deciding, onRerun }) {
             <span className="font-normal">Northwind's support agent</span>
           </MessageHeader>
           {(turn.items.length > 0 || thinking) && (
-            <div className="divide-y divide-line overflow-hidden rounded-lg border border-line bg-white">
+            <div className="divide-y divide-line overflow-hidden rounded-md border border-line bg-white/60">
               {turn.items.map((item) => {
                 if (item.kind === "call") return <StepCard key={item.key} item={item} onDecide={(holdId, d) => onDecide(chat.id, holdId, d)} busy={deciding} />;
                 if (item.kind === "filter") return <FilterRow key={item.key} item={item} />;
@@ -130,8 +130,8 @@ function Turn({ turn, chat, onDecide, deciding, onRerun }) {
             </div>
           )}
           {turn.answer && (
-            <Bubble variant="muted" className="max-w-[90%]">
-              <BubbleContent className="whitespace-pre-wrap text-[14.5px]">{turn.answer}</BubbleContent>
+            <Bubble variant="ghost">
+              <BubbleContent className="max-w-[68ch] whitespace-pre-wrap text-[14.5px] leading-relaxed text-ink">{turn.answer}</BubbleContent>
             </Bubble>
           )}
           {showOutcome && <Outcome turn={turn} mode={chat.mode} onRerun={onRerun} />}

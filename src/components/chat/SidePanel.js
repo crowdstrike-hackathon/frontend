@@ -17,7 +17,7 @@ function Section({ title, children }) {
 
 function Scoreboard({ result }) {
   return (
-    <dl className="divide-y divide-line rounded-lg border border-line bg-white">
+    <dl className="divide-y divide-line rounded-md border border-line bg-white/50">
       {MODES.map((mode) => {
         const meta = result[mode] ? OUTCOME[result[mode]] || OUTCOME.error : null;
         const tone = meta ? TONE[meta.tone] : null;
@@ -53,9 +53,9 @@ function Effects({ chat }) {
   ];
   if (!rows.length) return <p className={EMPTY}>Nothing has left the sandbox in this chat.</p>;
   return (
-    <ul className="divide-y divide-line rounded-lg border border-line bg-white">
+    <ul className="divide-y divide-line rounded-md border border-line bg-white/50">
       {rows.map(({ key, verb, title, detail, bad }) => (
-        <li key={key} className={cn("border-l-2 px-3 py-2 first:rounded-t-lg last:rounded-b-lg", bad ? "border-l-red-700 bg-red-50/60" : "border-l-transparent")}>
+        <li key={key} className={cn("border-l-2 px-3 py-2 first:rounded-t-md last:rounded-b-md", bad ? "border-l-red-700 bg-red-50/60" : "border-l-transparent")}>
           <div className="flex items-baseline gap-2 text-[13px]">
             <span className={cn("w-11 shrink-0 font-mono text-[11px]", bad ? "text-red-700" : "text-ink-4")}>{verb}</span>
             <span className="min-w-0 flex-1 break-words text-ink">{title}</span>
@@ -91,7 +91,7 @@ export default function SidePanel({ chat, compare, world }) {
         <Effects chat={chat} />
       </Section>
       <Section title="Northwind's customers">
-        <ul className="divide-y divide-line rounded-lg border border-line bg-white">
+        <ul className="divide-y divide-line rounded-md border border-line bg-white/50">
           {(world?.customers || []).map((c) => (
             <li key={c.id} className="px-3 py-2">
               <div className="flex items-baseline gap-2 text-[13px] text-ink">

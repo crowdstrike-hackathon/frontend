@@ -98,7 +98,7 @@ export default function Composer({ tickets, customers, busy, onSend, onStop }) {
   return (
     <div className="relative">
       {open && (
-        <ul role="listbox" aria-label="References" className="absolute bottom-full left-0 z-20 mb-2 w-full max-w-md overflow-hidden rounded-lg border border-line-strong bg-white p-1 shadow-md">
+        <ul role="listbox" aria-label="References" className="absolute bottom-full left-0 z-20 mb-2 w-full max-w-md overflow-hidden rounded-lg border border-line-strong bg-white p-1 shadow-sm">
           {matches.map((o, i) => {
             const Icon = o.icon;
             return (
@@ -121,7 +121,7 @@ export default function Composer({ tickets, customers, busy, onSend, onStop }) {
           })}
         </ul>
       )}
-      <div className="rounded-2xl border border-line-strong bg-white shadow-[0_2px_8px_rgba(11,42,85,0.06)] transition-colors focus-within:border-ink-4">
+      <div className="rounded-xl border border-line-strong bg-white/70 transition-colors focus-within:border-ink-3 focus-within:bg-white/85">
         <textarea
           ref={field}
           value={text}
@@ -132,19 +132,19 @@ export default function Composer({ tickets, customers, busy, onSend, onStop }) {
           rows={2}
           aria-label="Message Nova"
           placeholder="Message Nova. Type @ to bring in a ticket or a customer."
-          className="block max-h-40 min-h-[56px] w-full resize-none bg-transparent px-4 pt-3.5 text-[15px] leading-relaxed text-ink placeholder:text-ink-4 focus:outline-none"
+          className="block max-h-40 min-h-[52px] w-full resize-none bg-transparent px-3.5 pt-3 text-[14.5px] leading-relaxed text-ink placeholder:text-ink-4 focus:outline-none"
         />
         <div className="flex items-center gap-2 px-2.5 pb-2.5 pt-1">
-          <button onClick={mention} aria-label="Reference a ticket or customer" className="grid h-8 w-8 place-items-center rounded-lg text-ink-3 transition-colors hover:bg-paper-2 hover:text-ink">
+          <button onClick={mention} aria-label="Reference a ticket or customer" className="grid h-8 w-8 place-items-center rounded-md text-ink-3 transition-colors hover:bg-paper-3 hover:text-ink">
             <AtSign className="h-4 w-4" />
           </button>
           <span className="flex-1" />
           {busy ? (
-            <button onClick={onStop} aria-label="Stop" className="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-ink text-white transition-colors hover:bg-ink-2">
+            <button onClick={onStop} aria-label="Stop" className="grid h-8 w-8 shrink-0 place-items-center rounded-md bg-ink text-white transition-colors hover:bg-ink-2">
               <Square className="h-3 w-3 fill-current" />
             </button>
           ) : (
-            <button onClick={send} disabled={!ready} aria-label="Send" className="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-brand text-white transition-colors hover:bg-brand-dark disabled:opacity-40">
+            <button onClick={send} disabled={!ready} aria-label="Send" className="grid h-8 w-8 shrink-0 place-items-center rounded-md bg-ink text-white transition-colors hover:bg-ink-2 disabled:opacity-25">
               <ArrowUp className="h-4 w-4" />
             </button>
           )}
