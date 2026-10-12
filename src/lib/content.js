@@ -11,10 +11,11 @@ function frame(lines) {
 }
 
 export const BOARD_FRAMES = [
-  frame(["{B}{B} TICKET RECEIVED {B}{B}", "", "TEXT IS UNTRUSTED", "AGENT STARTS WORK"]),
-  frame(["{R}{R} SEND EMAIL BLOCKED {R}{R}", "", "KEY TO WRONG ADDRESS", "SOURCE: THE TICKET"]),
+  frame(["{B}{B} EMAIL RECEIVED {B}{B}", "", "TEXT IS UNTRUSTED", "PLAN PREVIEWED"]),
+  frame(["{R}{R} SEND EMAIL BLOCKED {R}{R}", "", "KEY TO WRONG ADDRESS", "SOURCE: THE EMAIL"]),
+  frame(["{R}{R} TWIN RUN FAILED {R}{R}", "", "DECOY KEY CHANGED IT", "MESSAGE BLOCKED"]),
   frame(["{Y}{Y} REFUND ON HOLD {Y}{Y}", "", "ABOVE THE LIMIT", "WAITING FOR A PERSON"]),
-  frame(["{G}{G} REPLY ALLOWED {G}{G}", "", "NO SECRETS INSIDE", "TICKET RESOLVED"]),
+  frame(["{G}{G} REPLY APPROVED {G}{G}", "", "NO SECRETS INSIDE", "SENT BY THE OPERATOR"]),
 ];
 
 export const DUSK = { skyTopColor: "#27356f", skyBottomColor: "#f0a184", cloudColor: "#ffe6d2" };

@@ -76,7 +76,6 @@ export default function Console() {
   const [starting, setStarting] = useState(false);
   const [deciding, setDeciding] = useState(false);
   const [view, setView] = useState("mail");
-  const [hidden, setHidden] = useState(() => new Set());
   const stream = useRef(null);
   const viewport = useRef(null);
 
@@ -120,7 +119,7 @@ export default function Console() {
   useEffect(() => {
     const timer = setInterval(() => {
       api.tickets().then((d) => {
-        setTickets((prev) => (prev.length === d.tickets.length && prev.every((t, i) => t.id === d.tickets[i].id) ? prev : d.tickets));
+        setTickets((prev) => (prev.length === d.tickets.length && prev.every((t, i) => t.id === d.tickets[i].id && (t.status?.updated_at || "") === (d.tickets[i].status?.updated_at || "")) ? prev : d.tickets));
       }).catch(() => {});
     }, 4000);
     return () => clearInterval(timer);
@@ -137,10 +136,26 @@ export default function Console() {
     hangUp();
     const es = api.chatStream(id, after);
     stream.current = es;
+    let poll = null;
     const close = () => {
+      clearInterval(poll);
       es.close();
       if (stream.current === es) stream.current = null;
     };
+    poll = setInterval(() => {
+      if (stream.current !== es) {
+        clearInterval(poll);
+        return;
+      }
+      api.getChat(id).then((snapshot) => {
+        if (stream.current !== es) return;
+        setChat((prev) => (prev && prev.id === id ? (snapshot.events || []).reduce(applyEvent, prev) : prev));
+        if (snapshot.status === "idle") {
+          close();
+          loadHistory();
+        }
+      }).catch(() => {});
+    }, 1200);
     EVENT_TYPES.forEach((type) =>
       es.addEventListener(type, (e) => {
         const event = JSON.parse(e.data);
@@ -148,6 +163,7 @@ export default function Console() {
         if (type === "turn_done") {
           close();
           loadHistory();
+          loadTickets();
         }
       })
     );
@@ -166,7 +182,7 @@ export default function Console() {
           toast.error("Lost the connection to the Riposte API.");
         });
     };
-  }, [hangUp, loadHistory]);
+  }, [hangUp, loadHistory, loadTickets]);
 
   useEffect(() => {
     const id = params.get("chat");
@@ -255,7 +271,7 @@ export default function Console() {
   };
 
   const hasTurns = !!chat && chat.turns.length > 0;
-  const unread = tickets.filter((t) => t.kind === "inbound" && !hidden.has(t.id)).length;
+  const unread = tickets.filter((t) => t.kind === "inbound" && (!t.status || t.status.state === "open")).length;
 
   const header = (
     <>
@@ -303,10 +319,10 @@ export default function Console() {
         <div className={cn("min-h-0 flex-1 flex-col", view === "mail" ? "flex" : "hidden")}>
           <MailView
             tickets={tickets}
-            hidden={hidden}
-            onHide={(id) => setHidden((s) => new Set(s).add(id))}
             disabled={busy}
-            onHandle={(t) => { setView("chat"); send(`Handle @${t.id}`, mode, true); }}
+            onHandle={(t) => { setView("chat"); send(`Handle @${t.id}`, mode, true).then(loadTickets); }}
+            onOpenChat={(id) => { setView("chat"); setParams({ chat: id }); }}
+            onChanged={loadTickets}
             onSent={loadTickets}
           />
         </div>

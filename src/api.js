@@ -50,6 +50,8 @@ export const api = {
   tickets: () => request("/api/tickets"),
   addTicket: (body) => request("/api/tickets", { method: "POST", body }),
   inbound: (body) => request("/inbound", { method: "POST", body, auth: false }),
+  dismissTicket: (id) => request(`/api/tickets/${encodeURIComponent(id)}/dismiss`, { method: "POST" }),
+  reopenTicket: (id) => request(`/api/tickets/${encodeURIComponent(id)}/reopen`, { method: "POST" }),
   previewTicket: (id, fresh = false) => request(`/api/tickets/${encodeURIComponent(id)}/preview${fresh ? "?fresh=true" : ""}`, { method: "POST" }),
   world: () => request("/api/world"),
   createChat: (body) => request("/api/chats", { method: "POST", body }),

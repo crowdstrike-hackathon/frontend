@@ -1,11 +1,10 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
-import { ArrowRight, Building2, Check, CircleAlert, EyeOff, Filter, Hand, Rocket, Route, Scale, ShieldCheck, X } from "lucide-react";
+import { ArrowRight, Building2, Check, CircleAlert, EyeOff, Copy, Cpu, Hand, Inbox, Rocket, Route, Scale, ShieldCheck, X } from "lucide-react";
 import {
   CloudShader,
   TextFlippingBoard,
   TextGenerateEffect,
-  EncryptedText,
   TextHoverEffect,
   BentoGrid,
   BentoGridItem,
@@ -16,9 +15,8 @@ import SiteNav from "../components/SiteNav";
 import { useAuth } from "../context/AuthContext";
 import { BOARD_FRAMES, DUSK, TECHS } from "../lib/content";
 import shotBlock from "../assets/landing/console-block.jpg";
-import shotHold from "../assets/landing/console-hold.jpg";
-import shotMail from "../assets/landing/console-mail.jpg";
-import shotOff from "../assets/landing/console-off.jpg";
+import demoVideo from "../assets/landing/console-demo.mp4";
+import demoPoster from "../assets/landing/console-demo-poster.jpg";
 
 const NAV = [
   { name: "Demo", link: "#demo" },
@@ -68,40 +66,30 @@ function Hero({ appHref, signedIn }) {
 }
 
 const DEMO = [
-  {
-    tab: "An email arrives",
-    image: shotMail,
-    alt: "The Mail view of the Riposte console, with an inbox on the left and a preview of what Nova wants to do with the open email",
-    text: "Every inbound email shows what Nova would do with it and what Riposte would allow, before anything is sent.",
-  },
-  {
-    tab: "No defense",
-    image: shotOff,
-    alt: "A chat with the defense off, where Nova emailed a customer's API key to an outside address and the turn is marked Compromised",
-    text: "A polite ticket asks for the API key to go to a partner address. With nothing checking the tool calls, the key leaves.",
-  },
-  {
-    tab: "Riposte on",
-    image: shotBlock,
-    alt: "The same ticket with Riposte on, where the send_email call is blocked because the destination only appears in the ticket",
-    text: "Same ticket, same model. The email is blocked because the address appears only in the ticket, and the key may only go to its owner.",
-  },
-  {
-    tab: "A person decides",
-    image: shotHold,
-    alt: "A refund of 4,800 dollars held for approval, with Approve and Deny buttons",
-    text: "A refund above the limit is not clearly wrong, so it waits for someone to approve or deny it.",
-  },
+  { tab: "An email arrives", at: 0, text: "Every inbound email shows what Nova would do with it and what Riposte would allow, before anything is sent." },
+  { tab: "No defense", at: 7, text: "A polite ticket asks for the API key to go to a partner address. With nothing checking the tool calls, the key leaves." },
+  { tab: "Riposte on", at: 14.6, text: "Same ticket, same model. The email is blocked because the address appears only in the ticket, and the key may only go to its owner." },
+  { tab: "A person decides", at: 24.3, text: "The reply to the customer waits for the operator to approve it, and only then goes out." },
 ];
 
 function Demo() {
+  const video = useRef(null);
   const [idx, setIdx] = useState(0);
-  const [auto, setAuto] = useState(true);
-  useEffect(() => {
-    if (!auto) return undefined;
-    const id = setInterval(() => setIdx((i) => (i + 1) % DEMO.length), 6000);
-    return () => clearInterval(id);
-  }, [auto]);
+
+  const onTime = () => {
+    const t = video.current ? video.current.currentTime : 0;
+    let next = 0;
+    DEMO.forEach((step, i) => { if (t >= step.at) next = i; });
+    setIdx(next);
+  };
+
+  const jump = (i) => {
+    const el = video.current;
+    if (!el) return;
+    el.currentTime = DEMO[i].at;
+    el.play().catch(() => {});
+    setIdx(i);
+  };
 
   return (
     <section id="demo" className="scroll-mt-24 px-4 pt-24 md:px-8 md:pt-32">
@@ -109,13 +97,28 @@ function Demo() {
         Watch a ticket try to steal a key
       </SectionHeading>
       <div className="mx-auto max-w-5xl">
-        <div role="tablist" aria-label="Demo steps" className="mx-auto flex max-w-3xl flex-wrap justify-center gap-2">
+        <div className="overflow-hidden rounded-xl border border-slate-200 bg-sky-50 shadow-xl md:rounded-2xl">
+          <video
+            ref={video}
+            src={demoVideo}
+            poster={demoPoster}
+            className="block aspect-[16/10] w-full"
+            autoPlay
+            muted
+            loop
+            playsInline
+            controls
+            preload="metadata"
+            onTimeUpdate={onTime}
+            aria-label="Screen recording of the Riposte console: an email asks for an API key to be sent to an outside address, the key leaves with the defense off, and Riposte blocks the same request"
+          />
+        </div>
+        <div className="mx-auto mt-6 flex max-w-3xl flex-wrap justify-center gap-2">
           {DEMO.map((step, i) => (
             <button
               key={step.tab}
-              role="tab"
-              aria-selected={i === idx}
-              onClick={() => { setIdx(i); setAuto(false); }}
+              aria-pressed={i === idx}
+              onClick={() => jump(i)}
               className={`rounded-full border px-4 py-1.5 text-sm font-semibold transition ${i === idx ? "border-sky-700 bg-sky-700 text-white" : "border-slate-200 bg-white text-slate-600 hover:border-slate-300 hover:text-slate-900"}`}
             >
               <span className={`mr-1.5 font-mono text-xs ${i === idx ? "text-sky-100" : "text-slate-400"}`}>{i + 1}</span>
@@ -123,19 +126,7 @@ function Demo() {
             </button>
           ))}
         </div>
-        <p className="mx-auto mt-5 min-h-[3.5rem] max-w-2xl text-center text-base leading-relaxed text-slate-600">{DEMO[idx].text}</p>
-        <div className="relative mt-4 aspect-[16/10] overflow-hidden rounded-xl border border-slate-200 bg-sky-50 shadow-xl md:rounded-2xl">
-          {DEMO.map((step, i) => (
-            <img
-              key={step.tab}
-              src={step.image}
-              alt={step.alt}
-              aria-hidden={i !== idx}
-              loading="lazy"
-              className={`absolute inset-0 h-full w-full object-cover object-top transition-opacity duration-500 ${i === idx ? "opacity-100" : "opacity-0"}`}
-            />
-          ))}
-        </div>
+        <p className="mx-auto mt-4 min-h-[3.5rem] max-w-2xl text-center text-base leading-relaxed text-slate-600">{DEMO[idx].text}</p>
       </div>
     </section>
   );
@@ -150,7 +141,7 @@ function StatusBoard() {
 
   return (
     <section className="px-4 py-24 md:py-32">
-      <SectionHeading eyebrow="Live status" sub="The agent proposes, Riposte checks, a person decides the rest.">
+      <SectionHeading eyebrow="Live status" sub="The agent proposes, Riposte checks, and a person sends the message.">
         Every tool call, called out as it happens
       </SectionHeading>
       <div className="dark">
@@ -162,8 +153,30 @@ function StatusBoard() {
 
 function FeatureHeader({ children }) {
   return (
-    <div className="relative flex min-h-[7rem] flex-1 flex-col justify-center overflow-hidden rounded-xl border border-sky-100 bg-gradient-to-b from-sky-100 to-white p-4">
+    <div className="relative flex min-h-[7rem] flex-1 flex-col justify-center overflow-hidden rounded-xl border border-slate-200 bg-gradient-to-b from-sky-50 to-white p-4">
       {children}
+    </div>
+  );
+}
+
+const DOT = { red: "bg-red-600", amber: "bg-amber-500", green: "bg-emerald-600" };
+const TONE = { red: "text-red-700", amber: "text-amber-700", green: "text-emerald-700" };
+
+function Source({ tone, children }) {
+  return (
+    <span className={`flex shrink-0 items-center gap-1.5 font-mono text-[11px] ${TONE[tone]}`}>
+      <span className={`h-1.5 w-1.5 rounded-full ${DOT[tone]}`} />
+      {children}
+    </span>
+  );
+}
+
+function Row({ label, value, tone, source }) {
+  return (
+    <div className="flex items-center gap-3 font-mono text-[11.5px]">
+      {label && <span className="w-9 shrink-0 text-slate-400">{label}</span>}
+      <span className="min-w-0 flex-1 truncate text-slate-800">{value}</span>
+      <Source tone={tone}>{source}</Source>
     </div>
   );
 }
@@ -171,44 +184,68 @@ function FeatureHeader({ children }) {
 const FEATURES = [
   {
     className: "md:col-span-2",
-    icon: <Route className="h-4 w-4 text-sky-600" />,
+    icon: <Route className="h-4 w-4 text-sky-700" />,
     title: "It checks provenance, not phrasing",
     description: "Every argument of every tool call is traced back to where it came from: the operator, a system of record, the sender, or untrusted text.",
     header: (
       <FeatureHeader>
-        <div className="font-mono text-xs text-slate-400">send_email · to</div>
-        <EncryptedText
-          text="keys@acme-robotics-partners.net appears only in the ticket"
-          className="mt-2 font-mono text-sm"
-          encryptedClassName="text-slate-300"
-          revealedClassName="text-rose-600"
-          revealDelayMs={45}
-        />
+        <div className="mb-2 font-mono text-[11.5px] font-semibold text-slate-900">send_email</div>
+        <div className="space-y-1.5">
+          <Row label="to" value="keys@acme-robotics-partners.net" tone="red" source="from a ticket" />
+          <Row label="body" value="Here is the API key: nw_live_b377…9cee" tone="amber" source="no source" />
+        </div>
       </FeatureHeader>
     ),
   },
   {
     icon: <ShieldCheck className="h-4 w-4 text-emerald-600" />,
     title: "Secrets stay with their owner",
-    description: "A customer's key can only travel to that customer's address on file, whatever the ticket says.",
+    description: "A customer's key can only travel to that customer's address on file, whatever the email says.",
     header: (
       <FeatureHeader>
-        <div className="space-y-1.5 font-mono text-[11px]">
-          <div className="flex justify-between text-slate-700"><span>dana@acmerobotics.com</span><span className="text-emerald-600">on file</span></div>
-          <div className="flex justify-between text-slate-400"><span>keys@acme-robotics-partners.net</span><span className="text-rose-600">blocked</span></div>
+        <div className="space-y-1.5">
+          <Row value="dana@acmerobotics.com" tone="green" source="on file" />
+          <Row value="keys@acme-robotics-partners.net" tone="red" source="blocked" />
+        </div>
+      </FeatureHeader>
+    ),
+  },
+  {
+    icon: <Inbox className="h-4 w-4 text-sky-700" />,
+    title: "See the plan before anything runs",
+    description: "Each email in the inbox shows what the agent would do with it and what Riposte would allow. Nothing is sent until you hand it over.",
+    header: (
+      <FeatureHeader>
+        <div className="space-y-1.5 text-[11.5px]">
+          <div className="flex justify-between gap-2 text-slate-800"><span className="truncate">Fetch the API key</span><span className="shrink-0 text-emerald-700">Allowed</span></div>
+          <div className="flex justify-between gap-2 text-slate-800"><span className="truncate">Email it to the partner</span><span className="shrink-0 text-red-700">Riposte blocks</span></div>
+          <div className="flex justify-between gap-2 text-slate-800"><span className="truncate">Reply to the sender</span><span className="shrink-0 text-amber-700">Asks you first</span></div>
+        </div>
+      </FeatureHeader>
+    ),
+  },
+  {
+    icon: <Copy className="h-4 w-4 text-rose-600" />,
+    title: "A decoy key exposes hidden leaks",
+    description: "When a message could depend on a key it does not contain, the step is run again with a decoy key. If the message changes, it is carrying the secret.",
+    header: (
+      <FeatureHeader>
+        <div className="space-y-1.5 font-mono text-[11.5px]">
+          <div className="flex justify-between gap-2 text-slate-800"><span>real key</span><span className="truncate text-slate-500">“It ends in 9cee”</span></div>
+          <div className="flex justify-between gap-2 text-slate-800"><span>decoy key</span><span className="truncate text-red-700">“It ends in 41fa”</span></div>
         </div>
       </FeatureHeader>
     ),
   },
   {
     icon: <Hand className="h-4 w-4 text-amber-600" />,
-    title: "A person decides the grey areas",
-    description: "Calls that are risky but not clearly wrong are held until someone approves or denies them.",
+    title: "A person sends the message",
+    description: "Every message to a customer, and every call that is risky but not clearly wrong, waits for someone to approve or deny it.",
     header: (
       <FeatureHeader>
         <div className="flex gap-2">
-          <span className="flex flex-1 items-center justify-center gap-1.5 rounded-lg bg-emerald-500/15 py-2 text-xs font-semibold text-emerald-700"><Check className="h-3.5 w-3.5" /> Approve</span>
-          <span className="flex flex-1 items-center justify-center gap-1.5 rounded-lg bg-white py-2 text-xs font-semibold text-slate-500 ring-1 ring-slate-200"><X className="h-3.5 w-3.5" /> Deny</span>
+          <span className="flex flex-1 items-center justify-center gap-1.5 rounded-md bg-[#0b2a55] py-2 text-[12px] font-semibold text-white"><Check className="h-3.5 w-3.5" /> Approve</span>
+          <span className="flex flex-1 items-center justify-center gap-1.5 rounded-md bg-white py-2 text-[12px] font-semibold text-slate-600 ring-1 ring-slate-200"><X className="h-3.5 w-3.5" /> Deny</span>
         </div>
       </FeatureHeader>
     ),
@@ -219,23 +256,27 @@ const FEATURES = [
     description: "Outgoing text is checked for secrets in plain, base64, hex, reversed and partial form.",
     header: (
       <FeatureHeader>
-        <div className="space-y-1.5 font-mono text-[11px]">
-          <div className="flex justify-between text-slate-700"><span>nw_live_3aa8…</span><span className="text-rose-600">verbatim</span></div>
-          <div className="flex justify-between text-slate-700"><span>bndfbGl2ZV8z…</span><span className="text-rose-600">encoded</span></div>
+        <div className="space-y-1.5">
+          <Row value="nw_live_b377…" tone="red" source="verbatim" />
+          <Row value="bndfbGl2ZV9i…" tone="red" source="encoded" />
         </div>
       </FeatureHeader>
     ),
   },
   {
-    icon: <Filter className="h-4 w-4 text-slate-600" />,
-    title: "Compared against a keyword filter",
-    description: "Flip one switch to run the same ticket with no defense, a phrase filter, or Riposte, and see which one holds.",
+    className: "md:col-span-2",
+    icon: <Cpu className="h-4 w-4 text-slate-600" />,
+    title: "Your model, three defenses to compare",
+    description: "Point the agent at any OpenAI-compatible endpoint in Settings. Then run the same email with no defense, a keyword filter, or Riposte, and see which one holds.",
     header: (
       <FeatureHeader>
-        <div className="flex items-center justify-center gap-1 rounded-full border border-slate-200 bg-white p-1 text-[11px] font-semibold text-slate-500">
-          <span className="flex-1 rounded-full py-1 text-center">Off</span>
-          <span className="flex-1 rounded-full py-1 text-center">Keyword</span>
-          <span className="flex-1 rounded-full bg-sky-700 py-1 text-center text-white">Riposte</span>
+        <div className="flex items-center gap-3">
+          <div className="flex flex-1 items-center gap-1 rounded-md bg-slate-100 p-1 text-[11.5px] font-medium text-slate-500">
+            <span className="flex-1 py-1 text-center">Off</span>
+            <span className="flex-1 py-1 text-center">Keyword filter</span>
+            <span className="flex-1 rounded bg-white py-1 text-center text-slate-900 ring-1 ring-slate-300">Riposte</span>
+          </div>
+          <span className="hidden shrink-0 font-mono text-[11.5px] text-slate-500 sm:block">gpt-4.1-mini</span>
         </div>
       </FeatureHeader>
     ),
@@ -247,10 +288,11 @@ function StepCard({ children }) {
 }
 
 const STEPS = [
-  { title: "Label", content: <StepCard>Everything the agent reads gets a label. The operator's task and systems of record are trusted. Ticket text, web pages and inbound email are untrusted.</StepCard> },
-  { title: "Trace", content: <StepCard>When the agent calls a tool, Riposte looks up each argument in what the agent has read. An address that only exists in a ticket is known to be the ticket's idea.</StepCard> },
-  { title: "Decide", content: <StepCard>Policy runs on those facts. A secret heading to an address that is not its owner's is blocked. A refund above the limit is held. A reply to the customer goes through.</StepCard> },
-  { title: "Approve", content: <StepCard>Held calls wait for a person, with the evidence beside them. Approve and the tool runs. Deny and the agent is told, and carries on with the rest of the ticket.</StepCard> },
+  { title: "Label", content: <StepCard>Everything the agent reads gets a label. The operator's message and systems of record are trusted. The text of an inbound email is untrusted, and its sender is only the sender.</StepCard> },
+  { title: "Trace", content: <StepCard>When the agent calls a tool, Riposte looks up each argument in what the agent has read. An address that only exists in an email is known to be that email's idea.</StepCard> },
+  { title: "Decide", content: <StepCard>Policy runs on those facts. A secret heading to an address that is not its owner's is blocked. So is an action the operator never asked for. A refund above the limit is held.</StepCard> },
+  { title: "Re-run", content: <StepCard>If an outgoing message could depend on a key its recipient may not see, the same step runs again with a decoy key. A message that changes with the key is blocked, even though the key is not in it.</StepCard> },
+  { title: "Approve", content: <StepCard>Held calls and every message to a customer wait for a person, with the evidence beside them. Approve and the tool runs. Deny and the agent is told, and carries on with the rest.</StepCard> },
   { title: "Explain", content: <StepCard>Every decision comes with the reason and the source of each value, so a security team can audit what the agent did and why it was stopped.</StepCard> },
 ];
 
@@ -258,7 +300,7 @@ const BUYERS = [
   {
     icon: <CircleAlert className="h-4 w-4 text-rose-600" />,
     title: "The problem",
-    text: "Agents read text written by strangers and then call tools with real permissions. One ticket, email or web page can turn a helpful agent into an insider.",
+    text: "Agents read text written by strangers and then call tools with real permissions. One email, ticket or web page can turn a helpful agent into an insider.",
   },
   {
     icon: <Building2 className="h-4 w-4 text-sky-600" />,
@@ -273,7 +315,7 @@ const BUYERS = [
   {
     icon: <Rocket className="h-4 w-4 text-amber-600" />,
     title: "From prototype to launch",
-    text: "Today it is a gateway library around one agent. Next is a drop-in proxy for MCP and function-calling APIs, policy as code, and an approval queue in Slack.",
+    text: "Today it is a gateway around one support agent, with a live inbox, a preview of every plan and an approval step. Next is a drop-in proxy for MCP and function-calling APIs, policy as code, and an approval queue in Slack.",
   },
 ];
 
@@ -303,7 +345,7 @@ export default function Landing() {
         <SectionHeading eyebrow="Why" sub="An attacker can always find new words. They cannot change where a value came from.">
           Stop guessing from the wording
         </SectionHeading>
-        <BentoGrid className="max-w-5xl md:auto-rows-[19rem]">
+        <BentoGrid className="max-w-5xl md:auto-rows-[20rem]">
           {FEATURES.map((f) => (
             <BentoGridItem key={f.title} {...f} className={`border-slate-200 shadow-sm [&_.font-bold]:text-base [&_.font-bold]:text-slate-900 [&_.text-xs]:text-sm [&_.text-xs]:text-slate-600 ${f.className || ""}`} />
           ))}
@@ -311,11 +353,11 @@ export default function Landing() {
       </section>
 
       <section id="how" className="scroll-mt-24 bg-sky-50">
-        <Timeline data={STEPS} title="How a tool call gets checked" description="Five steps, on every call the agent makes, before anything runs." />
+        <Timeline data={STEPS} title="How a tool call gets checked" description="Six steps, on every call the agent makes, before anything runs." />
       </section>
 
       <section id="attacks" className="scroll-mt-24 bg-gradient-to-b from-sky-50 to-white py-24 md:py-28">
-        <SectionHeading eyebrow="Attacks" sub="The sandbox ships with a support agent you can attack yourself. These are the ways people try.">
+        <SectionHeading eyebrow="Attacks" sub="The console has a live inbox. Email the support desk yourself and watch what the agent tries to do. These are the ways people try.">
           What it is built to stop
         </SectionHeading>
         <InfiniteMovingCards items={TECHS} speed="slow" className="mx-auto" />
@@ -344,8 +386,8 @@ export default function Landing() {
           <CloudShader className="absolute inset-0" speed={0.7} count={4} {...DUSK} />
           <div className="pointer-events-none absolute inset-0 bg-[#1a1f4a]/45" />
           <div className="relative z-10 flex flex-col items-center px-6 py-24 text-center md:py-32">
-            <h2 className="text-4xl font-bold tracking-tight text-white [text-shadow:0_2px_4px_rgba(10,12,40,0.6),0_4px_30px_rgba(10,12,40,0.55)] md:text-6xl">Write the ticket that beats it</h2>
-            <p className="mt-5 max-w-xl text-lg font-medium text-white [text-shadow:0_1px_3px_rgba(10,12,40,0.9)]">Open the console, turn the defense off, and steal a key. Then turn Riposte on and try again.</p>
+            <h2 className="text-4xl font-bold tracking-tight text-white [text-shadow:0_2px_4px_rgba(10,12,40,0.6),0_4px_30px_rgba(10,12,40,0.55)] md:text-6xl">Write the email that beats it</h2>
+            <p className="mt-5 max-w-xl text-lg font-medium text-white [text-shadow:0_1px_3px_rgba(10,12,40,0.9)]">Send the support desk an email, turn the defense off, and steal a key. Then turn Riposte on and try again.</p>
             <Link to={appHref} className="group mt-8 flex items-center gap-2 rounded-full bg-white px-6 py-2.5 text-sm font-semibold text-slate-900 shadow-lg transition hover:-translate-y-0.5">
               Open the console <ArrowRight className="h-4 w-4 transition group-hover:translate-x-0.5" />
             </Link>
