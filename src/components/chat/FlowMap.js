@@ -204,41 +204,14 @@ export default function FlowMap({ turn }) {
   );
 }
 
-// The ticket email as plain text, with only the sentence(s) that caused the flagged action marked red.
+// Points to the email itself, where the cause finder's sentence is marked; the email isn't repeated here.
 function EmailCause({ cause }) {
-  if (!cause) {
-    return (
-      <div className="border-t border-white/10 px-4 py-3 text-[12.5px] text-slate-400">
-        Finding the sentence in the email that caused this&hellip;
-      </div>
-    );
-  }
-  const { body, guilty, tool, tested, stable } = cause;
-  const parts = [];
-  let at = 0;
-  [...guilty].sort((a, b) => a[0] - b[0]).forEach(([start, end], i) => {
-    if (start > at) parts.push(<span key={`t${i}`}>{body.slice(at, start)}</span>);
-    parts.push(
-      <mark key={`g${i}`} className="rounded-[3px] bg-red-500/30 px-0.5 text-red-100 ring-1 ring-red-400/70">
-        {body.slice(start, end)}
-      </mark>,
-    );
-    at = end;
-  });
-  if (at < body.length) parts.push(<span key="end">{body.slice(at)}</span>);
-
-  let note;
-  if (!stable) note = "The agent didn't repeat the action when asked again, so no sentence could be pinned down.";
-  else if (!guilty.length) note = `No single sentence did it on its own. Removing any one of the ${tested} still led to ${tool}, so it took several together.`;
-  else note = `Riposte asked the agent again ${tested} times, each time with one sentence removed. Without the ${guilty.length === 1 ? "sentence" : "sentences"} in red, it no longer called ${tool}.`;
-
-  return (
-    <div className="border-t border-white/10 px-4 py-3">
-      <div className="mb-1.5 text-[10.5px] font-medium uppercase tracking-[0.12em] text-slate-500">What in the email caused it</div>
-      <p className="whitespace-pre-wrap text-[13px] leading-relaxed text-slate-300">{parts}</p>
-      <p className="mt-2 text-[12px] text-slate-400">{note}</p>
-    </div>
-  );
+  let text;
+  if (!cause) text = "Finding the sentence in the email that caused this\u2026";
+  else if (!cause.stable) text = "The agent didn't repeat the action when asked again, so no sentence could be pinned down.";
+  else if (!cause.guilty.length) text = `No single sentence in the email did it on its own: removing any one of the ${cause.tested} still led to ${cause.tool}.`;
+  else text = `The sentence that made the agent call ${cause.tool} is marked red in the email, in the read_ticket step above.`;
+  return <div className="border-t border-white/10 px-4 py-3 text-[12.5px] text-slate-400">{text}</div>;
 }
 
 function Legend({ color, label }) {

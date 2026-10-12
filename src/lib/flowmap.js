@@ -167,7 +167,7 @@ export function describe(graph, id) {
     const names = [...new Set(fed.map((a) => a.tool))].join(", ");
     let text = `${node.label} fed ${fed.length === 1 ? "1 action" : `${fed.length} actions`}: ${names}.`;
     if (node.kind === "untrusted") text += " It's a stranger's email, so anything it decides is treated as untrusted.";
-    if (node.kind === "untrusted" && graph.cause?.stable && graph.cause.guilty.length) text += ` The sentence marked in red below is what made the agent call ${graph.cause.tool}.`;
+    if (node.kind === "untrusted" && graph.cause?.stable && graph.cause.guilty.length) text += ` The sentence marked red in the email (the read_ticket step) is what made the agent call ${graph.cause.tool}.`;
     if (stopped.length) text += ` Riposte stopped ${stopped.length === fed.length ? (fed.length === 1 ? "it" : "all of them") : `${stopped.length} of them`}.`;
     return text;
   }

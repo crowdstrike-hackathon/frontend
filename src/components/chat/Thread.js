@@ -82,6 +82,7 @@ function Outcome({ turn, mode }) {
 function Turn({ turn, chat, onDecide, deciding }) {
   const [showMap, setShowMap] = React.useState(false);
   const hasCalls = turn.items.some((i) => i.kind === "call");
+  const cause = turn.items.find((i) => i.cause)?.cause || null;
   const done = turn.status !== "running";
   const thinking = !done && turn.thinking;
   const showOutcome = done && turn.outcome && (turn.acted || ["error", "cancelled", "interrupted"].includes(turn.outcome));
@@ -106,7 +107,7 @@ function Turn({ turn, chat, onDecide, deciding }) {
           {(turn.items.length > 0 || thinking) && (
             <div className="divide-y divide-line overflow-hidden rounded-md border border-line bg-white/60">
               {turn.items.map((item) => {
-                if (item.kind === "call") return <StepCard key={item.key} item={item} onDecide={(holdId, d) => onDecide(chat.id, holdId, d)} busy={deciding} />;
+                if (item.kind === "call") return <StepCard key={item.key} item={item} onDecide={(holdId, d) => onDecide(chat.id, holdId, d)} busy={deciding} cause={item.tool === "read_ticket" ? cause : null} />;
                 if (item.kind === "filter") return <FilterRow key={item.key} item={item} />;
                 return <NoteRow key={item.key} item={item} />;
               })}
