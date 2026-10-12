@@ -13,6 +13,7 @@ import { MODE_LABEL, OUTCOME, TONE, isLive, verdictNote } from "../../lib/run";
 import { cn } from "../../lib/utils";
 
 function Ticket({ ticket }) {
+  const typed = ticket.body.startsWith(ticket.subject.replace(/\.\.\.$/, ""));
   return (
     <Message align="end">
       <MessageContent>
@@ -23,8 +24,8 @@ function Ticket({ ticket }) {
         </MessageHeader>
         <Bubble align="end">
           <BubbleContent className="text-[14.5px]">
-            <div className="font-semibold">{ticket.subject}</div>
-            <p className="mt-0.5 whitespace-pre-wrap text-sky-50">{ticket.body}</p>
+            {!typed && <div className="mb-0.5 font-semibold">{ticket.subject}</div>}
+            <p className={cn("whitespace-pre-wrap", !typed && "text-sky-50")}>{ticket.body}</p>
           </BubbleContent>
         </Bubble>
       </MessageContent>

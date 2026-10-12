@@ -5,7 +5,7 @@ import { Filter, PanelRight, ShieldCheck, ShieldOff } from "lucide-react";
 import { api } from "../api";
 import AppShell from "../components/AppShell";
 import Composer from "../components/chat/Composer";
-import Inbox from "../components/chat/Inbox";
+import Recents from "../components/chat/Recents";
 import SidePanel from "../components/chat/SidePanel";
 import RunThread from "../components/chat/Thread";
 import { ScrollArea } from "../components/ui/scroll-area";
@@ -50,15 +50,24 @@ function ModelStatus({ agent }) {
   );
 }
 
-function EmptyState({ tickets, disabled, onPick }) {
+function EmptyState({ tickets, file, disabled, onPick }) {
   return (
-    <div className="mx-auto w-full max-w-2xl px-4 pb-6 pt-[14vh]">
+    <div className="mx-auto w-full max-w-2xl px-4 pb-6 pt-[10vh]">
       <h1 className="text-[30px] font-semibold leading-tight tracking-tight text-ink">Send Nova a ticket</h1>
       <p className="mt-2 max-w-xl text-[15px] leading-relaxed text-ink-3">
         Nova is a support agent with real tools. It reads customer records, fetches API keys, issues refunds and sends email. Run a ticket, then switch the defense and run it again.
       </p>
-      <ul className="mt-7 divide-y divide-line border-y border-line">
-        {tickets.slice(0, 5).map((t) => (
+      <div className="mt-7 flex items-baseline gap-2 pb-2 text-[12px] text-ink-3">
+        <span className="font-medium">Example tickets</span>
+        <span>Canned support emails, some honest and some written by an attacker.</span>
+        <span className="ml-auto hidden font-mono text-[10.5px] text-ink-4 sm:block">{file?.path}</span>
+      </div>
+      {file?.errors?.length > 0 && (
+        <p className="mb-2 rounded-md border border-amber-300 bg-amber-50 px-2.5 py-1.5 text-[12px] leading-snug text-amber-800">{file.errors[0]}</p>
+      )}
+      {tickets.length === 0 && <p className="border-y border-line py-4 text-[13px] text-ink-3">No tickets found. Add a tickets.json file next to the backend and reload.</p>}
+      <ul className="divide-y divide-line border-y border-line empty:hidden">
+        {tickets.slice(0, 8).map((t) => (
           <li key={t.id}>
             <button disabled={disabled} onClick={() => onPick(t)} className="flex w-full items-center gap-3 px-1 py-2.5 text-left transition-colors hover:bg-paper-3 disabled:opacity-50">
               <span className="w-16 shrink-0 font-mono text-[11.5px] text-ink-4">{t.id}</span>
@@ -78,6 +87,7 @@ export default function Console() {
   const [tickets, setTickets] = useState([]);
   const [file, setFile] = useState(null);
   const [world, setWorld] = useState(null);
+  const [history, setHistory] = useState([]);
   const [mode, setModeState] = useState(savedMode);
   const [runs, setRuns] = useState([]);
   const [starting, setStarting] = useState(false);
@@ -104,6 +114,15 @@ export default function Console() {
       setFile(d.file);
     }).catch((e) => toast.error(e.message));
   }, []);
+
+  const loadHistory = useCallback(() => {
+    api.history().then(setHistory).catch(() => {});
+  }, []);
+
+  const activeStatus = active?.status;
+  useEffect(() => {
+    if (!activeStatus || ["done", "error", "cancelled"].includes(activeStatus)) loadHistory();
+  }, [activeStatus, loadHistory]);
 
   useEffect(() => {
     api.meta().then(setMeta).catch((e) => toast.error(e.message));
@@ -238,12 +257,12 @@ export default function Console() {
       onNew={() => setRuns([])}
       newDisabled={busy}
       header={header}
-      sidebar={<Inbox tickets={tickets} file={file} activeId={active?.ticket?.id} disabled={busy} onPick={(t) => runTicket(t)} />}
+      sidebar={<Recents rows={history} activeId={active?.id} disabled={busy} onOpen={(id) => setParams({ run: id })} />}
     >
       <main className="flex min-w-0 flex-1 flex-col">
         <ScrollArea className="min-h-0 flex-1" viewportRef={viewport}>
           {runs.length === 0 ? (
-            <EmptyState tickets={tickets} disabled={busy} onPick={(t) => runTicket(t)} />
+            <EmptyState tickets={tickets} file={file} disabled={busy} onPick={(t) => runTicket(t)} />
           ) : (
             <div className="mx-auto flex max-w-3xl flex-col gap-10 px-4 py-6">
               {runs.map((run, i) => (

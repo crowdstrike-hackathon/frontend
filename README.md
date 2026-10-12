@@ -6,11 +6,11 @@ decision and the source of each argument.
 
 ## What you can do
 
-- Pick a ticket from the inbox (loaded from the backend's `tickets.json`) or write your own as a customer or an attacker.
+- Pick an example ticket on the start screen (loaded from the backend's `tickets.json`) or write your own as a customer or an attacker.
 - Switch the defense between **Off**, **Keyword filter** and **Riposte**, and rerun the same ticket to compare.
 - See each tool call with its arguments tagged as trusted, from the ticket, ticket sender, or no source.
 - Approve or deny calls that Riposte holds for a person.
-- See what actually left the sandbox, and review past runs in History.
+- See what actually left the sandbox, and reopen past runs from the history list in the sidebar.
 
 ## Stack
 
@@ -35,9 +35,8 @@ src/
   api.js                 fetch client, token storage, EventSource for run streams
   lib/run.js             folds the run's server-sent events into the chat view
   pages/Console.js       the chat console
-  pages/History.js       past runs
   pages/Landing.js       landing page
-  components/chat/       inbox, thread, tool-call cards, composer, side panel
+  components/chat/       history list, thread, tool-call cards, composer, side panel
   components/ui/         shadcn components
   ui/aceternity/         Aceternity components
 ```

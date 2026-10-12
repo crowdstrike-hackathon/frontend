@@ -6,7 +6,6 @@ import { TooltipProvider } from "./components/ui/tooltip";
 import Landing from "./pages/Landing";
 import Login from "./pages/Login";
 import Console from "./pages/Console";
-import History from "./pages/History";
 
 function Protected({ children }) {
   const { user, loading } = useAuth();
@@ -27,7 +26,6 @@ function Routing() {
       <Route path="/login" element={!loading && user ? <Navigate to="/console" replace /> : <Login />} />
       <Route path="/" element={<Landing />} />
       <Route path="/console" element={<Protected><Console /></Protected>} />
-      <Route path="/history" element={<Protected><History /></Protected>} />
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );

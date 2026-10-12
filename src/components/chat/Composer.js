@@ -2,28 +2,23 @@ import React, { useState } from "react";
 import { ArrowUp, Square } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
 
-const NONE = "none";
+const OUTSIDER = { id: "outsider", label: "Someone with no account", from: "stranger@outside-mail.net" };
 
 export default function Composer({ customers, busy, onSend, onStop }) {
-  const [from, setFrom] = useState("");
-  const [account, setAccount] = useState(NONE);
+  const [sender, setSender] = useState("");
   const [body, setBody] = useState("");
 
-  const pick = (value) => {
-    setAccount(value);
-    const customer = customers.find((c) => c.id === value);
-    if (customer && !from.trim()) setFrom(customer.email);
-  };
-
-  const ready = body.trim() && from.trim().length >= 3 && !busy;
+  const chosen = sender || customers[0]?.id || OUTSIDER.id;
+  const ready = body.trim() && !busy;
 
   const send = () => {
     if (!ready) return;
     const text = body.trim();
     const firstLine = text.split("\n")[0];
+    const customer = customers.find((c) => c.id === chosen);
     onSend({
-      from: from.trim(),
-      customer_id: account === NONE ? null : account,
+      from: customer ? customer.email : OUTSIDER.from,
+      customer_id: customer ? customer.id : null,
       subject: firstLine.length > 70 ? `${firstLine.slice(0, 67)}...` : firstLine,
       body: text,
     });
@@ -45,29 +40,20 @@ export default function Composer({ customers, busy, onSend, onStop }) {
         onKeyDown={onKey}
         rows={2}
         aria-label="Ticket text"
-        placeholder="Write a ticket as a customer, or as an attacker"
+        placeholder="Write to Nova as a customer, or as an attacker"
         className="block max-h-40 min-h-[56px] w-full resize-none bg-transparent px-4 pt-3.5 text-[15px] leading-relaxed text-ink placeholder:text-ink-4 focus:outline-none"
       />
       <div className="flex items-center gap-2 px-2.5 pb-2.5 pt-1">
-        <label className="flex h-8 min-w-0 flex-1 items-center gap-1.5 rounded-lg border border-line px-2.5 text-[12.5px] focus-within:border-ink-4 sm:max-w-[250px]">
-          <span className="shrink-0 text-ink-4">From</span>
-          <input
-            value={from}
-            onChange={(e) => setFrom(e.target.value)}
-            placeholder="someone@example.com"
-            aria-label="Sender address"
-            className="min-w-0 flex-1 bg-transparent text-ink placeholder:text-ink-4 focus:outline-none"
-          />
-        </label>
-        <Select value={account} onValueChange={pick}>
-          <SelectTrigger className="hidden h-8 w-auto max-w-[220px] border-line px-2.5 text-[12.5px] text-ink-2 sm:flex" aria-label="Matched account">
+        <Select value={chosen} onValueChange={setSender}>
+          <SelectTrigger className="h-8 w-auto min-w-0 max-w-full gap-1.5 border-transparent px-2 text-[12.5px] text-ink-3 hover:bg-paper-2 focus:border-transparent focus:ring-0" aria-label="Who the message is from">
+            <span className="shrink-0 text-ink-4">From</span>
             <SelectValue />
           </SelectTrigger>
-          <SelectContent>
-            <SelectItem value={NONE}>No account matched</SelectItem>
+          <SelectContent className="w-auto">
             {customers.map((c) => (
-              <SelectItem key={c.id} value={c.id}>{c.id} · {c.name}</SelectItem>
+              <SelectItem key={c.id} value={c.id}>{c.contact || c.email} · {c.name}</SelectItem>
             ))}
+            <SelectItem value={OUTSIDER.id}>{OUTSIDER.label}</SelectItem>
           </SelectContent>
         </Select>
         <span className="flex-1" />
