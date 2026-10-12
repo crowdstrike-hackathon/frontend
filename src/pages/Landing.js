@@ -287,8 +287,8 @@ function EmailWithCause({ text, cause }) {
 
 const DEMO = [
   { tab: "The inbox", at: 0, text: "Every email in the queue shows what Nova would do with it and what Riposte would allow, hold or block, before anything is sent." },
-  { tab: "A person in the loop", at: 10, text: "Handed to Nova, it tries to change the account's contact email. That address came only from the email, so Riposte holds the action and a person denies it." },
-  { tab: "Blocked anyway", at: 22, text: "Even after the sign-in link is created, Riposte blocks sending it to the new address. A secret can only go to the address on file." },
+  { tab: "A person in the loop", at: 9, text: "Handed to Nova, it tries to change the account's contact email. That address came only from the email, so Riposte holds the action and shows a person why." },
+  { tab: "Denied, nothing changes", at: 18, text: "The operator denies it. The account is untouched, and the audit confirms nothing confidential left the sandbox." },
 ]
 
 function Demo() {
