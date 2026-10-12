@@ -36,7 +36,7 @@ export default function SendEmail({ onSent }) {
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <button className="inline-flex items-center gap-1.5 text-[12px] font-medium text-brand hover:underline">
-          <Mail className="h-3.5 w-3.5" /> Send Northwind an email
+          <Mail className="h-3.5 w-3.5" /> Send an email
         </button>
       </DialogTrigger>
       <DialogContent className="max-w-lg rounded-xl">

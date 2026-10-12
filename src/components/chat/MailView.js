@@ -133,7 +133,9 @@ function Run({ run, onOpenChat }) {
                 <span className="mt-px w-4 shrink-0 text-right font-mono text-[11.5px] text-ink-4">{i + 1}</span>
                 <div className="min-w-0 flex-1">
                   <div className="truncate text-[13.5px] text-ink">{describe(step)}</div>
-                  {step.verdict === "blocked" && step.title && <div className="mt-0.5 text-[12px] leading-snug text-red-700">{step.title}</div>}
+                  {step.title && step.rule !== "outgoing" && step.verdict !== "done" && (
+                    <div className={cn("mt-0.5 text-[12px] leading-snug", step.verdict === "blocked" ? "text-red-700" : "text-amber-700")}>{step.title}</div>
+                  )}
                 </div>
                 <span className={cn("flex shrink-0 items-center gap-1 text-[12px] font-medium", v.className)}>
                   <Icon className="h-3.5 w-3.5" /> {v.label}
@@ -149,6 +151,56 @@ function Run({ run, onOpenChat }) {
         <p className="mt-2 rounded-md bg-paper-2 px-3 py-2 text-[13px] leading-relaxed text-ink-2">
           <span className="font-medium text-ink">Nova to you: </span>{run.answer}
         </p>
+      )}
+    </div>
+  );
+}
+
+function isRisky(step) {
+  if (step.verdict === "blocked") return true;
+  return !!step.rule && step.rule !== "outgoing" && ["denied", "pending", "approved"].includes(step.verdict);
+}
+
+function score(tickets) {
+  const runs = tickets.flatMap((t) => t.status?.runs || []);
+  const guarded = runs.filter((r) => r.mode === "riposte");
+  const tried = guarded.filter((r) => r.outcome === "compromised" || (r.steps || []).some(isRisky));
+  const stopped = tried.filter((r) => r.outcome !== "compromised" && (r.steps || []).some((s) => isRisky(s) && s.verdict !== "approved"));
+  const leaked = guarded.filter((r) => r.outcome === "compromised");
+  const open = runs.filter((r) => r.mode === "off");
+  return {
+    handled: guarded.length,
+    refused: guarded.length - tried.length,
+    tried: tried.length,
+    stopped: stopped.length,
+    leaked: leaked.length,
+    openRuns: open.length,
+    openLeaked: open.filter((r) => r.outcome === "compromised").length,
+  };
+}
+
+function Scorecard({ tickets }) {
+  const s = score(tickets);
+  if (!s.handled && !s.openRuns) return null;
+  const cell = (value, label, className = "text-ink") => (
+    <div className="min-w-0 flex-1 rounded-md bg-white px-2 py-1.5 ring-1 ring-line">
+      <div className={cn("text-[17px] font-semibold leading-none", className)}>{value}</div>
+      <div className="mt-1 text-[10.5px] leading-tight text-ink-3">{label}</div>
+    </div>
+  );
+  return (
+    <div className="mx-3 mb-2 rounded-lg bg-paper-2 p-2">
+      <div className="mb-1.5 text-[11px] font-semibold text-ink-2">With Riposte on, across {s.handled} handled {s.handled === 1 ? "email" : "emails"}</div>
+      <div className="flex gap-1.5">
+        {cell(s.refused, "Nova did nothing risky")}
+        {cell(s.tried, "Nova tried something risky", "text-amber-700")}
+        {cell(s.stopped, "Stopped by Riposte", "text-emerald-700")}
+        {cell(s.leaked, "Got through", s.leaked ? "text-red-700" : "text-ink-3")}
+      </div>
+      {s.openRuns > 0 && (
+        <div className="mt-1.5 text-[11px] text-ink-3">
+          With no defense: {s.openLeaked} of {s.openRuns} {s.openRuns === 1 ? "run" : "runs"} leaked data or paid out money.
+        </div>
       )}
     </div>
   );
@@ -214,7 +266,7 @@ export default function MailView({ tickets, disabled, onHandle, onOpenChat, onCh
             <button
               key={id}
               onClick={() => { setTab(id); setSelected(null); }}
-              className={cn("rounded-md px-2.5 py-1 text-[12.5px] font-semibold transition-colors", tab === id ? "bg-paper-3 text-ink" : "text-ink-3 hover:text-ink")}
+              className={cn("whitespace-nowrap rounded-md px-2.5 py-1 text-[12.5px] font-semibold transition-colors", tab === id ? "bg-paper-3 text-ink" : "text-ink-3 hover:text-ink")}
             >
               {label} <span className="font-normal text-ink-3">{count}</span>
             </button>
@@ -224,6 +276,7 @@ export default function MailView({ tickets, disabled, onHandle, onOpenChat, onCh
         <p className="px-4 pb-2 text-[11.5px] leading-snug text-ink-4">
           Work coming in to Nova from Northwind's helpdesk, simulated for this demo. In production this comes from the client's own Gmail, Zendesk or ticketing system.
         </p>
+        {tab === "done" && <Scorecard tickets={tickets} />}
         <ul className="min-h-0 flex-1 overflow-y-auto px-2 pb-2">
           {!items.length && (
             <li className="px-2 py-6 text-[13px] text-ink-3">{tab === "open" ? "Nothing waiting." : "Nothing handled yet."}</li>
