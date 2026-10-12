@@ -1,12 +1,7 @@
 {
   "short_name": "Riposte",
-  "name": "Riposte — Agentic SOC",
+  "name": "Riposte \u2014 Agentic SOC",
   "icons": [
-    {
-      "src": "favicon.svg",
-      "type": "image/svg+xml",
-      "sizes": "any"
-    },
     {
       "src": "favicon.ico",
       "sizes": "64x64 32x32 24x24 16x16",

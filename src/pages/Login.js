@@ -35,7 +35,7 @@ export default function Login() {
 
       <div className="relative z-10 flex min-h-screen flex-col items-center justify-center px-4 py-10">
         <Link to="/" className="flex items-center gap-2">
-          <LogoMark size={34} className="shadow-sm" />
+          <LogoMark size={36} />
           <span className="text-xl font-semibold tracking-tight text-white drop-shadow-sm">Riposte</span>
         </Link>
 

@@ -67,7 +67,7 @@ export default function SiteNav({ links, actions = [], note, lightOver, light: a
 
   const logo = (
     <Link to="/" className="relative z-20 flex items-center gap-2 px-2 py-1">
-      <LogoMark size={28} className="shadow-sm" />
+      <LogoMark size={30} />
       <span className={cn("text-base font-semibold tracking-tight", tone.text)}>Riposte</span>
     </Link>
   );
