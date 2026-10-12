@@ -35,11 +35,13 @@ function useOver(id) {
 
 // links: { name, to?: route, link?: hash }   actions: { label, to?, onClick?, secondary? }
 // lightOver: id of a dark section; the bar uses white text while it sits over that section.
-export default function SiteNav({ links, actions = [], note, lightOver }) {
+// light: always use white text (pages that are sky all the way down).
+export default function SiteNav({ links, actions = [], note, lightOver, light: alwaysLight }) {
   const [open, setOpen] = useState(false);
   const nav = useNavigate();
   const { pathname } = useLocation();
-  const light = useOver(lightOver);
+  const over = useOver(lightOver);
+  const light = alwaysLight || over;
   const tone = light ? TONE.light : TONE.dark;
 
   const items = links.map(({ name, to, link }) => ({

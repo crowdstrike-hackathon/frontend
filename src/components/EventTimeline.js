@@ -1,56 +1,52 @@
 import React, { useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Key, Fingerprint, Monitor, Wifi, Cloud, Mail, ShieldAlert, Radio } from "lucide-react";
-import Panel from "./Panel";
-import { SEVERITY_COLOR } from "../lib/utils";
+import { Key, Fingerprint, Monitor, Wifi, Cloud, Mail, Radio, CloudOff } from "lucide-react";
+import { Panel, Empty, Chip } from "./Sky";
+import { cn, SEVERITY_COLOR } from "../lib/utils";
 
 const ICONS = { auth: Key, identity: Fingerprint, endpoint: Monitor, network: Wifi, cloud: Cloud, email: Mail };
 
 export default function EventTimeline({ events, narrative, trusted, suspected, running }) {
-  const endRef = useRef(null);
+  const scrollRef = useRef(null);
   useEffect(() => {
-    endRef.current?.scrollIntoView({ behavior: "smooth" });
+    const el = scrollRef.current;
+    if (el) el.scrollTo({ top: el.scrollHeight, behavior: "smooth" });
   }, [events.length]);
 
   return (
     <Panel
-      className="flex-1"
-      dots={false}
+      className="h-full"
       icon={<Radio className="h-4 w-4 text-rose-600" />}
       title="Live telemetry"
       right={
         <>
-          <span className="text-xs text-slate-500">adversary AI emitting logs</span>
           {running && (
-            <span className="flex items-center gap-1.5 text-xs text-rose-600">
-              <span className="h-2 w-2 animate-ping rounded-full bg-rose-500" /> streaming
-            </span>
+            <Chip className="bg-rose-500/10 text-rose-600">
+              <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-rose-500" /> streaming
+            </Chip>
           )}
+          <span className="tabular-nums">{events.length} events</span>
         </>
       }
     >
-      <div className="scrollbar-thin flex-1 overflow-y-auto px-5 py-3">
-        <AnimatePresence initial={false}>
-          {narrative && (
-            <motion.div
-              key={narrative}
-              initial={{ opacity: 0, y: -6 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="mb-3 flex items-start gap-2 rounded-lg border border-rose-500/20 bg-rose-500/5 px-3 py-2 font-mono text-xs text-rose-600/90"
-            >
-              <span className="shrink-0 whitespace-nowrap font-bold">RED ▸</span> {narrative}
-            </motion.div>
-          )}
-        </AnimatePresence>
-
-        {events.length === 0 && (
-          <div className="flex h-full flex-col items-center justify-center py-16 text-center text-sm text-slate-500">
-            <ShieldAlert className="mb-3 h-8 w-8 text-slate-300" />
-            No telemetry yet. Launch a scenario to begin the engagement.
-          </div>
+      <AnimatePresence initial={false}>
+        {narrative && (
+          <motion.div
+            key={narrative}
+            initial={{ opacity: 0, y: -6 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="mx-5 mb-2 flex items-start gap-2 rounded-2xl bg-rose-500/10 px-4 py-2.5 text-[13px] leading-relaxed text-rose-700"
+          >
+            <span className="shrink-0 whitespace-nowrap font-semibold">Red move</span>
+            <span>{narrative}</span>
+          </motion.div>
         )}
+      </AnimatePresence>
 
-        <div className="space-y-1.5">
+      {events.length === 0 ? (
+        <Empty icon={CloudOff}>Clear skies. Launch a scenario and red's activity will stream in here.</Empty>
+      ) : (
+        <ul ref={scrollRef} className="scrollbar-thin min-h-0 flex-1 overflow-y-auto pb-2">
           <AnimatePresence initial={false}>
             {events.map((e) => {
               const Icon = ICONS[e.domain] || Monitor;
@@ -58,43 +54,34 @@ export default function EventTimeline({ events, narrative, trusted, suspected, r
               const isSuspect = suspected.has(e.id);
               const color = SEVERITY_COLOR[e.severity] || SEVERITY_COLOR.info;
               return (
-                <motion.div
+                <motion.li
                   key={e.id}
                   layout
-                  initial={{ opacity: 0, x: -12 }}
-                  animate={{ opacity: isSuspect ? 0.6 : 1, x: 0 }}
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.25 }}
-                  className="group flex gap-3 rounded-xl border border-slate-900/10 bg-white/70 px-3 py-2.5 transition hover:bg-white"
-                  style={{ borderLeft: `2px solid ${isTrusted ? "#0284c7" : "transparent"}` }}
+                  className="flex gap-3 border-t border-slate-900/5 px-5 py-3 transition-colors hover:bg-white/60"
                 >
-                  <div className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-lg" style={{ background: `${color}1a`, color }}>
-                    <Icon className="h-3.5 w-3.5" />
+                  <div className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-xl" style={{ background: `${color}1f`, color }}>
+                    <Icon className="h-4 w-4" />
                   </div>
                   <div className="min-w-0 flex-1">
-                    <div className="flex items-center gap-2">
-                      <span className="rounded px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-slate-600 ring-1 ring-slate-900/15">
-                        {e.domain}
-                      </span>
-                      {e.attack_id && e.attack_id !== "DECEPTION" && (
-                        <span className="font-mono text-[10px] text-rose-600/80">{e.attack_id}</span>
-                      )}
-                      <span className="ml-auto h-1.5 w-1.5 rounded-full" style={{ background: color }} />
+                    <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-[11px]">
+                      <span className="font-semibold uppercase tracking-wide" style={{ color }}>{e.severity}</span>
+                      <span className="uppercase tracking-wide text-slate-500">{e.domain}</span>
+                      {e.attack_id && e.attack_id !== "DECEPTION" && <span className="font-mono text-slate-500">{e.attack_id}</span>}
+                      {isTrusted && <Chip className="ml-auto bg-sky-500/10 py-0.5 text-sky-700">trusted by blue</Chip>}
+                      {isSuspect && <Chip className="ml-auto bg-amber-500/15 py-0.5 text-amber-700">flagged as decoy</Chip>}
                     </div>
-                    <p className="mt-1 text-[13px] leading-snug text-slate-800">{e.message}</p>
-                    <div className="mt-1 flex items-center gap-2 font-mono text-[11px] text-slate-500">
-                      <span>{e.source}</span>
-                      {e.actor && <span>· {e.actor}</span>}
-                      {e.host && <span>· {e.host}</span>}
-                      {isSuspect && <span className="ml-auto text-amber-600">⚑ flagged deception</span>}
-                    </div>
+                    <p className={cn("mt-0.5 text-sm leading-snug", isSuspect ? "text-slate-500" : "text-slate-900")}>{e.message}</p>
+                    <p className="mt-0.5 truncate font-mono text-[11px] text-slate-500">{[e.source, e.actor, e.host].filter(Boolean).join(" · ")}</p>
                   </div>
-                </motion.div>
+                </motion.li>
               );
             })}
           </AnimatePresence>
-          <div ref={endRef} />
-        </div>
-      </div>
+        </ul>
+      )}
     </Panel>
   );
 }

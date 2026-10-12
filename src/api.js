@@ -56,4 +56,19 @@ export const api = {
   stats: () => request("/api/stats"),
   ingest: (logs) => request("/api/ingest", { method: "POST", body: { logs } }),
   stream: (id) => new EventSource(`${BASE}/api/sessions/${id}/stream?token=${encodeURIComponent(getToken() || "")}`),
+
+  agentTickets: () => request("/api/agent/tickets"),
+  createAgentRun: (body) => request("/api/agent/runs", { method: "POST", body }),
+  startAgentRun: (id) => request(`/api/agent/runs/${id}/start`, { method: "POST" }),
+  getAgentRun: (id) => request(`/api/agent/runs/${id}`),
+  agentStream: (id) => new EventSource(`${BASE}/api/agent/runs/${id}/stream?token=${encodeURIComponent(getToken() || "")}`),
+  agentHistory: () => request("/api/agent/history"),
+
+  createRedteam: (n = 0) => request("/api/agent/redteam", { method: "POST", body: { n } }),
+  startRedteam: (id) => request(`/api/agent/redteam/${id}/start`, { method: "POST" }),
+  redteamStream: (id) => new EventSource(`${BASE}/api/agent/redteam/${id}/stream?token=${encodeURIComponent(getToken() || "")}`),
+
+  getConnection: () => request("/api/settings/connection"),
+  putConnection: (body) => request("/api/settings/connection", { method: "PUT", body }),
+  testConnection: (body) => request("/api/settings/connection/test", { method: "POST", body }),
 };

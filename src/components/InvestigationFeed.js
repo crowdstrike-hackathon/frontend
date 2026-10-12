@@ -1,37 +1,64 @@
 import React from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { Area, AreaChart, ResponsiveContainer, Tooltip, YAxis } from "recharts";
 import { Brain } from "lucide-react";
-import Panel from "./Panel";
+import { Panel, Empty, Chip } from "./Sky";
 import { VERDICT_STYLE } from "../lib/utils";
 
-export default function InvestigationFeed({ investigations }) {
+export default function InvestigationFeed({ investigations, className }) {
   const ordered = [...investigations].reverse();
+  const trend = investigations.map((inv) => ({ turn: inv.turn, confidence: Math.round(inv.confidence * 100) }));
+
   return (
-    <Panel icon={<Brain className="h-4 w-4 text-sky-600" />} title="Blue agent · investigations">
-      <div className="scrollbar-thin max-h-[300px] flex-1 overflow-y-auto px-4 py-3">
-        {ordered.length === 0 && (
-          <div className="py-8 text-center text-xs text-slate-500">The defender AI will post verdicts here.</div>
-        )}
-        <AnimatePresence initial={false}>
-          {ordered.map((inv) => {
-            const s = VERDICT_STYLE[inv.verdict] || VERDICT_STYLE.benign;
-            return (
-              <motion.div key={inv.id} layout initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="mb-2.5 rounded-xl border border-slate-900/10 bg-white/70 p-3">
-                <div className="flex items-center gap-2">
-                  <span className={`rounded-md px-2 py-0.5 text-[10px] font-bold ring-1 ${s.text} ${s.ring} ${s.bg}`}>{s.label}</span>
-                  <span className="font-mono text-[11px] text-slate-500">turn {inv.turn}</span>
-                  <span className="ml-auto text-[11px] text-slate-600">{Math.round(inv.confidence * 100)}%</span>
-                </div>
-                <div className="mt-1.5 text-[13px] font-semibold text-slate-900">{inv.headline}</div>
-                <p className="mt-1 text-[12px] leading-relaxed text-slate-600">{inv.reasoning}</p>
-                <div className="mt-2 h-1 overflow-hidden rounded-full bg-slate-900/5">
-                  <motion.div initial={{ width: 0 }} animate={{ width: `${inv.confidence * 100}%` }} className="h-full rounded-full bg-gradient-to-r from-sky-500 to-emerald-500" />
-                </div>
-              </motion.div>
-            );
-          })}
-        </AnimatePresence>
-      </div>
+    <Panel className={className} icon={<Brain className="h-4 w-4 text-sky-600" />} title="Blue's read" right={<span>verdict per turn</span>}>
+      {ordered.length === 0 ? (
+        <Empty icon={Brain}>After each turn the defender posts a verdict, how sure it is, and why.</Empty>
+      ) : (
+        <div className="scrollbar-thin min-h-0 flex-1 overflow-y-auto pb-2">
+          {trend.length > 1 && (
+            <div className="px-5 pb-3">
+              <div className="text-[11px] text-slate-500">Confidence by turn</div>
+              <div className="mt-1 h-14">
+                <ResponsiveContainer width="100%" height="100%">
+                  <AreaChart data={trend} margin={{ top: 4, right: 2, left: 2, bottom: 0 }}>
+                    <defs>
+                      <linearGradient id="confGrad" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stopColor="#0284c7" stopOpacity={0.35} />
+                        <stop offset="100%" stopColor="#0284c7" stopOpacity={0} />
+                      </linearGradient>
+                    </defs>
+                    <YAxis domain={[0, 100]} hide />
+                    <Tooltip
+                      formatter={(v) => [`${v}%`, "confidence"]}
+                      labelFormatter={(_, p) => (p[0] ? `turn ${p[0].payload.turn}` : "")}
+                      contentStyle={{ background: "#ffffff", border: "1px solid #e2e8f0", borderRadius: 12, fontSize: 12 }}
+                    />
+                    <Area type="monotone" dataKey="confidence" stroke="#0284c7" strokeWidth={2} fill="url(#confGrad)" />
+                  </AreaChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+          )}
+          <ul>
+            <AnimatePresence initial={false}>
+              {ordered.map((inv) => {
+                const s = VERDICT_STYLE[inv.verdict] || VERDICT_STYLE.benign;
+                return (
+                  <motion.li key={inv.id} layout initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="border-t border-slate-900/5 px-5 py-3.5">
+                    <div className="flex items-center gap-2 text-[11px]">
+                      <Chip className={`py-0.5 font-bold ${s.text} ${s.bg}`}>{s.label}</Chip>
+                      <span className="text-slate-500">turn {inv.turn}</span>
+                      <span className="ml-auto font-medium tabular-nums text-slate-700">{Math.round(inv.confidence * 100)}% sure</span>
+                    </div>
+                    <div className="mt-1.5 text-sm font-semibold leading-snug text-slate-900">{inv.headline}</div>
+                    <p className="mt-1 text-[13px] leading-relaxed text-slate-600">{inv.reasoning}</p>
+                  </motion.li>
+                );
+              })}
+            </AnimatePresence>
+          </ul>
+        </div>
+      )}
     </Panel>
   );
 }
